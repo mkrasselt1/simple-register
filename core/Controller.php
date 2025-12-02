@@ -66,9 +66,10 @@ abstract class Controller {
     
     /**
      * Get JSON input
-     * @return array
+     * @return array|null Returns null if JSON is invalid
      */
     protected function getJsonInput() {
-        return json_decode(file_get_contents('php://input'), true) ?: [];
+        $input = json_decode(file_get_contents('php://input'), true);
+        return $input;
     }
 }

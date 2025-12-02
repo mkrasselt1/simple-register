@@ -19,7 +19,7 @@ class PaymentController extends Controller {
         
         $input = $this->getJsonInput();
         
-        if (!$input) {
+        if ($input === null) {
             $this->json(['success' => false, 'error' => 'Invalid JSON input'], 400);
         }
         
