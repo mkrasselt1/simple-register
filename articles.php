@@ -14,12 +14,12 @@ function getArticles() {
 }
 
 function saveArticles($articles) {
-    return file_put_contents(ARTICLES_FILE, json_encode($articles, JSON_PRETTY_PRINT));
+    return file_put_contents(ARTICLES_FILE, json_encode($articles, JSON_PRETTY_PRINT), LOCK_EX);
 }
 
 function addArticle($name, $price, $color = '#007bff') {
     $articles = getArticles();
-    $id = uniqid();
+    $id = bin2hex(random_bytes(8));
     $articles[$id] = [
         'id' => $id,
         'name' => $name,

@@ -14,12 +14,12 @@ function getTransactions() {
 }
 
 function saveTransactions($transactions) {
-    return file_put_contents(TRANSACTIONS_FILE, json_encode($transactions, JSON_PRETTY_PRINT));
+    return file_put_contents(TRANSACTIONS_FILE, json_encode($transactions, JSON_PRETTY_PRINT), LOCK_EX);
 }
 
 function logTransaction($items, $total, $paymentMethod) {
     $transactions = getTransactions();
-    $id = uniqid();
+    $id = bin2hex(random_bytes(8));
     $transactions[] = [
         'id' => $id,
         'items' => $items,

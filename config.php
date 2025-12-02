@@ -23,10 +23,10 @@ if (!file_exists(DATA_DIR)) {
 
 // Initialize articles file if it doesn't exist
 if (!file_exists(ARTICLES_FILE)) {
-    file_put_contents(ARTICLES_FILE, json_encode([], JSON_PRETTY_PRINT));
+    file_put_contents(ARTICLES_FILE, json_encode([], JSON_PRETTY_PRINT), LOCK_EX);
 }
 
 // Initialize transactions file if it doesn't exist
 if (!file_exists(TRANSACTIONS_FILE)) {
-    file_put_contents(TRANSACTIONS_FILE, json_encode([], JSON_PRETTY_PRINT));
+    file_put_contents(TRANSACTIONS_FILE, json_encode([], JSON_PRETTY_PRINT), LOCK_EX);
 }
