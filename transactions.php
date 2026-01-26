@@ -6,14 +6,18 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/entities/Transaction.php';
 
+define('TRANSACTIONS_DIR', __DIR__ . '/data/transactions/');
+
 function getTransactions() {
-    if (!file_exists(TRANSACTIONS_FILE)) {
+    if (!is_dir(TRANSACTIONS_DIR)) {
         return [];
     }
-    $content = file_get_contents(TRANSACTIONS_FILE);
-    $arr = json_decode($content, true) ?: [];
+    $files = glob(TRANSACTIONS_DIR . '*.json');
     $result = [];
-    foreach ($arr as $t) {
+    foreach ($files as $file) {
+        $content = file_get_contents($file);
+        $t = json_decode($content, true);
+        if (!$t) continue;
         $result[] = new Transaction(
             $t['id'],
             $t['items'],
@@ -23,25 +27,34 @@ function getTransactions() {
             $t['layout'] ?? ''
         );
     }
+    // Nach Zeit sortieren (neueste zuerst)
+    usort($result, function($a, $b) {
+        return strtotime($b->getTimestamp()) <=> strtotime($a->getTimestamp());
+    });
     return $result;
 }
 
+// Nicht mehr benötigt, da jede Transaktion einzeln gespeichert wird
 function saveTransactions($transactions) {
-    return file_put_contents(TRANSACTIONS_FILE, json_encode($transactions, JSON_PRETTY_PRINT), LOCK_EX);
+    return true;
 }
 
 function logTransaction($items, $total, $paymentMethod, $layout = '') {
-    $transactions = getTransactions();
+    if (!is_dir(TRANSACTIONS_DIR)) {
+        mkdir(TRANSACTIONS_DIR, 0777, true);
+    }
+    $timestamp = time();
     $id = bin2hex(random_bytes(8));
-    $transactions[] = [
+    $data = [
         'id' => $id,
         'items' => $items,
         'total' => (float) $total,
         'payment_method' => $paymentMethod,
-        'timestamp' => date('Y-m-d H:i:s'),
+        'timestamp' => date('Y-m-d H:i:s', $timestamp),
         'layout' => $layout
     ];
-    saveTransactions($transactions);
+    $filename = TRANSACTIONS_DIR . $timestamp . '_' . $id . '.json';
+    file_put_contents($filename, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX);
     return $id;
 }
 

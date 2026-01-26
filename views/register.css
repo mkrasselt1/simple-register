@@ -52,6 +52,8 @@ body {
     overflow-y: auto;
     background: #1a1a2e;
     position: relative;
+    max-height: calc(100vh - 60px - 50px); /* 60px header, 50px layout-controls */
+    min-height: 0;
 }
 
 .bill-panel.edit-mode {
@@ -429,6 +431,10 @@ body {
     .bill-panel {
         min-width: 100%;
         max-height: 50vh;
+    }
+
+    .products-panel {
+        max-height: calc(50vh - 50px); /* 50vh für products, 50px für layout-controls */
     }
 
     .products-grid {
