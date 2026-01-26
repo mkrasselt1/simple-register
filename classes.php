@@ -8,6 +8,7 @@ class Article {
     public $price;
     public $color;
     public $created_at;
+    public $textColor;
 
     public function __construct($data) {
         $this->id = $data['id'] ?? '';
@@ -15,16 +16,20 @@ class Article {
         $this->price = $data['price'] ?? 0;
         $this->color = $data['color'] ?? '#007bff';
         $this->created_at = $data['created_at'] ?? '';
+        // textColor wird ggf. später gesetzt
+        $this->textColor = $data['textColor'] ?? null;
     }
 
     public function toArray() {
-        return [
+        $arr = [
             'id' => $this->id,
             'name' => $this->name,
             'price' => $this->price,
             'color' => $this->color,
             'created_at' => $this->created_at
         ];
+        if ($this->textColor) $arr['textColor'] = $this->textColor;
+        return $arr;
     }
 }
 

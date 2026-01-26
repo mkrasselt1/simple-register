@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cash Register - Simple Register</title>
+    <link rel="stylesheet" href="views/common.css">
     <link rel="stylesheet" href="views/register.css">
     <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.17/dist/interact.min.js"></script>
     <script>
         const articles = <?php echo $articlesJson; ?>;
     </script>
     <script src="views/register.js"></script>
+    <?php require_once __DIR__ . '/_color_utils.php'; ?>
 </head>
 <body>
     <div class="header">
@@ -42,7 +44,7 @@
                 <div class="products-grid" id="productsGrid">
                     <?php foreach ($articles as $article): ?>
                         <button class="product-btn"
-                            style="background-color: <?php echo View::escape($article['color'] ?? '#007bff'); ?>"
+                            style="background-color: <?php echo View::escape($article['color'] ?? '#007bff'); ?>; color: <?php echo View::escape($article['textColor'] ?? '#fff'); ?>;"
                             data-id="<?php echo View::escape($article['id']); ?>"
                             data-name="<?php echo View::escape($article['name']); ?>"
                             data-price="<?php echo View::escape($article['price']); ?>"

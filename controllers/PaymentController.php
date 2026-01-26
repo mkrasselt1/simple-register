@@ -35,10 +35,10 @@ class PaymentController extends Controller {
         $total = isset($input['total']) ? (float) $input['total'] : 0;
         $method = $input['method'];
         $items = $input['items'];
-        
+        $layout = isset($input['layout']) ? $input['layout'] : '';
         // Log the transaction
         try {
-            $transactionId = logTransaction($items, $total, $method);
+            $transactionId = logTransaction($items, $total, $method, $layout);
             $this->json([
                 'success' => true,
                 'transaction_id' => $transactionId,

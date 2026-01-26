@@ -62,6 +62,7 @@ function renderProductsGrid(visibleIds = null) {
     const btn = document.createElement("button");
     btn.className = "product-btn";
     btn.style.backgroundColor = article.color || "#007bff";
+    btn.style.color = article.textColor || "#fff";
     btn.dataset.id = article.id;
     btn.dataset.name = article.name;
     btn.dataset.price = article.price;
@@ -686,6 +687,8 @@ function pay(method) {
   const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   // Send to server
+  const layoutSelect = document.getElementById('layoutSelect');
+  const layout = layoutSelect && layoutSelect.value ? layoutSelect.value : '';
   fetch("api/payment.php", {
     method: "POST",
     headers: {
@@ -695,6 +698,7 @@ function pay(method) {
       items: items,
       total: total,
       method: method,
+      layout: layout,
     }),
   })
     .then((response) => response.json())

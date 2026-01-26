@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/classes.php';
+require_once __DIR__ . '/views/_color_utils.php';
 
 function getArticles() {
     if (!file_exists(ARTICLES_FILE)) {
@@ -14,6 +15,7 @@ function getArticles() {
     $data = json_decode($content, true) ?: [];
     $articles = [];
     foreach ($data as $item) {
+        $item['textColor'] = getContrastTextColor($item['color'] ?? '#007bff');
         $articles[$item['id']] = new Article($item);
     }
     return $articles;

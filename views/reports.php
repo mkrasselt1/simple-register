@@ -4,43 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Reports - Simple Register</title>
+    <link rel="stylesheet" href="views/common.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #1a1a2e;
-            color: white;
-            min-height: 100vh;
-        }
-        .header {
-            background: #16213e;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header h1 {
-            font-size: 1.3em;
-        }
-        .header-links a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 5px;
-            margin-left: 10px;
-        }
-        .header-links a:hover {
-            background: rgba(255,255,255,0.2);
-        }
         .container {
             max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #4ecca3;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            opacity: 0.8;
+            font-size: 0.9em;
         }
         .filters {
             background: #16213e;
@@ -70,51 +59,6 @@
             border-radius: 5px;
             color: #1a1a2e;
             cursor: pointer;
-            font-weight: 600;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background: #16213e;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .stat-value {
-            font-size: 2em;
-            font-weight: 700;
-            color: #4ecca3;
-            margin-bottom: 5px;
-        }
-        .stat-label {
-            opacity: 0.8;
-            font-size: 0.9em;
-        }
-        .section {
-            background: #16213e;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .section h2 {
-            margin-bottom: 15px;
-            color: #4ecca3;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #0f3460;
-        }
-        th {
-            background: #0f3460;
             font-weight: 600;
         }
         .payment-method {
@@ -189,7 +133,7 @@
                 <tbody>
                     <?php foreach ($articleStats as $article): ?>
                     <tr>
-                        <td><?php echo View::escape($article['article_name']); ?></td>
+                        <td><?php echo View::escape($article['name']); ?></td>
                         <td><?php echo (int)$article['total_qty']; ?></td>
                         <td>€<?php echo number_format($article['total_revenue'], 2); ?></td>
                     </tr>
@@ -207,26 +151,28 @@
                         <th>Items</th>
                         <th>Total</th>
                         <th>Method</th>
+                        <th>Layout</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($recentTransactions as $transaction): ?>
                     <tr>
-                        <td><?php echo View::escape($transaction['timestamp']); ?></td>
+                        <td><?php echo View::escape($transaction->getTimestamp()); ?></td>
                         <td>
                             <?php 
-                            $items = $transaction['items'];
+                            $items = $transaction->getItems();
                             echo implode(', ', array_map(function($item) {
-                                return $item['name'] . ' (×' . $item['qty'] . ')';
+                                return $item->getName() . ' (×' . $item->getQty() . ')';
                             }, $items));
                             ?>
                         </td>
-                        <td>€<?php echo number_format($transaction['total'], 2); ?></td>
+                        <td>€<?php echo number_format($transaction->getTotal(), 2); ?></td>
                         <td>
-                            <span class="payment-method <?php echo $transaction['payment_method']; ?>">
-                                <?php echo ucfirst($transaction['payment_method']); ?>
+                            <span class="payment-method <?php echo $transaction->getPaymentMethod(); ?>">
+                                <?php echo ucfirst($transaction->getPaymentMethod()); ?>
                             </span>
                         </td>
+                        <td><?php echo View::escape($transaction->getLayout()); ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

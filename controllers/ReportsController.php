@@ -18,15 +18,14 @@ class ReportsController extends Controller {
         $stats = getTransactionStats($startDate . ' 00:00:00', $endDate . ' 23:59:59');
         $articleStats = getArticleStats($startDate . ' 00:00:00', $endDate . ' 23:59:59');
         $transactions = getTransactions();
-        $recentTransactions = array_slice($transactions, 0, 50);
-        $recentTransactionsArray = array_map(function($transaction) {
-            return $transaction->toArray();
-        }, $recentTransactions);
-        
+        $filteredTransactions = array_filter($transactions, function($transaction) use ($startDate, $endDate) {
+            $timestamp = strtotime($transaction->getTimestamp());
+            return $timestamp >= strtotime($startDate . ' 00:00:00') && $timestamp <= strtotime($endDate . ' 23:59:59');
+        });
         $this->render('reports', [
             'stats' => $stats,
             'articleStats' => $articleStats,
-            'recentTransactions' => $recentTransactionsArray,
+            'recentTransactions' => $filteredTransactions,
             'startDate' => $startDate,
             'endDate' => $endDate
         ]);

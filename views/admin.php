@@ -4,42 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Simple Register</title>
+    <link rel="stylesheet" href="views/common.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-        }
-        .header {
-            background: #28a745;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header h1 {
-            font-size: 1.5em;
-        }
-        .header a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 5px;
-        }
-        .header a:hover {
-            background: rgba(255,255,255,0.3);
-        }
         .container {
             max-width: 1000px;
-            margin: 20px auto;
-            padding: 0 20px;
         }
         .message {
             padding: 15px;
@@ -55,15 +23,16 @@
             color: #721c24;
         }
         .card {
-            background: white;
-            border-radius: 8px;
+            background: #16213e;
+            border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 20px;
             margin-bottom: 20px;
+            color: white;
         }
         .card h2 {
             margin-bottom: 20px;
-            color: #333;
+            color: #4ecca3;
         }
         .form-row {
             display: flex;
@@ -79,37 +48,28 @@
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
-            color: #555;
+            color: #4ecca3;
         }
         .form-group input {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #0f3460;
             border-radius: 5px;
             font-size: 1em;
+            background: #1a1a2e;
+            color: white;
         }
         .form-group input[type="color"] {
             height: 42px;
             cursor: pointer;
-        }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: opacity 0.3s;
-        }
-        button:hover {
-            opacity: 0.8;
         }
         .btn-primary {
             background: #007bff;
             color: white;
         }
         .btn-success {
-            background: #28a745;
-            color: white;
+            background: #4ecca3;
+            color: #1a1a2e;
         }
         .btn-danger {
             background: #dc3545;
@@ -123,10 +83,10 @@
         .articles-table td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #0f3460;
         }
         .articles-table th {
-            background: #f8f9fa;
+            background: #0f3460;
             font-weight: 600;
         }
         .color-preview {
@@ -157,8 +117,9 @@
 <body>
     <div class="header">
         <h1>⚙️ Admin Panel</h1>
-        <div>
-            <a href="register.php">📋 Register</a>
+        <div class="header-links">
+            <a href="register.php">🛒 Register</a>
+            <a href="reports.php">📊 Reports</a>
             <a href="index.php">🏠 Home</a>
         </div>
     </div>
@@ -210,24 +171,24 @@
                 </thead>
                 <tbody>
                     <?php foreach ($articles as $article): ?>
-                    <tr>
-                        <form method="POST">
-                            <input type="hidden" name="id" value="<?php echo View::escape($article['id']); ?>">
+                    <form method="POST">
+                        <tr>
+                            <input type="hidden" name="id" value="<?php echo View::escape($article->id); ?>">
                             <td>
-                                <input type="text" name="name" value="<?php echo View::escape($article['name']); ?>" required>
+                                <input type="text" name="name" value="<?php echo View::escape($article->name); ?>" required>
                             </td>
                             <td>
-                                <input type="number" name="price" value="<?php echo View::escape($article['price']); ?>" step="0.01" min="0.01" required style="width: 100px;">
+                                <input type="number" name="price" value="<?php echo View::escape($article->price); ?>" step="0.01" min="0.01" required style="width: 100px;"> €
                             </td>
                             <td>
-                                <input type="color" name="color" value="<?php echo View::escape($article['color'] ?? '#007bff'); ?>">
+                                <input type="color" name="color" value="<?php echo View::escape($article->color ?? '#007bff'); ?>">
                             </td>
                             <td class="actions">
                                 <button type="submit" name="action" value="update" class="btn-primary">💾 Save</button>
                                 <button type="submit" name="action" value="delete" class="btn-danger" onclick="return confirm('Are you sure?')">🗑️ Delete</button>
                             </td>
-                        </form>
-                    </tr>
+                        </tr>
+                    </form>
                     <?php endforeach; ?>
                 </tbody>
             </table>
