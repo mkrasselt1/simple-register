@@ -1,0 +1,437 @@
+/* register.css – ausgelagertes CSS aus register.php */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: #1a1a2e;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background: #16213e;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 1.3em;
+}
+
+.header-links a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+.header-links a:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.products-panel {
+    flex: 2;
+    padding: 20px;
+    overflow-y: auto;
+    background: #1a1a2e;
+    position: relative;
+}
+
+.bill-panel.edit-mode {
+    display: none;
+}
+
+.bill-panel {
+    flex: 1;
+    min-width: 300px;
+    max-width: 300px;
+    background: #16213e;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #0f3460;
+}
+
+.edit-panel {
+    flex: 1;
+    min-width: 300px;
+    max-width: 300px;
+    background: #16213e;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #0f3460;
+    display: none;
+}
+
+.edit-panel.show {
+    display: flex;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.product-btn {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    text-align: center;
+    transition: transform 0.1s, box-shadow 0.1s;
+    word-break: break-word;
+    min-width: 50px;
+    min-height: 50px;
+    box-sizing: border-box;
+}
+
+.product-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.product-btn:active {
+    transform: scale(0.95);
+}
+
+.product-btn .name {
+    margin-bottom: 5px;
+}
+
+.product-btn .price {
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.bill-header {
+    padding: 20px;
+    border-bottom: 1px solid #0f3460;
+}
+
+.bill-header h2 {
+    font-size: 1.2em;
+}
+
+.bill-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.bill-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    margin-bottom: 8px;
+}
+
+.bill-item .item-info {
+    flex: 1;
+}
+
+.bill-item .item-name {
+    font-weight: 500;
+}
+
+.bill-item .item-price {
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+.bill-item .item-qty {
+    background: #0f3460;
+    padding: 5px 12px;
+    border-radius: 15px;
+    margin: 0 10px;
+}
+
+.bill-item .remove-btn {
+    background: #e94560;
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bill-item .remove-btn:hover {
+    background: #c73e54;
+}
+
+.bill-footer {
+    padding: 20px;
+    border-top: 1px solid #0f3460;
+}
+
+.total-display {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.total-label {
+    font-size: 1em;
+    opacity: 0.7;
+}
+
+.total-amount {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #4ecca3;
+}
+
+.payment-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.pay-btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: white;
+    transition: opacity 0.3s;
+}
+
+.pay-btn:hover {
+    opacity: 0.9;
+}
+
+.pay-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pay-btn.cash {
+    background: #4ecca3;
+}
+
+.pay-btn.card {
+    background: #007bff;
+}
+
+.clear-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: #e94560;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.clear-btn:hover {
+    background: #c73e54;
+}
+
+.no-products {
+    text-align: center;
+    padding: 40px;
+    opacity: 0.6;
+}
+
+.no-products a {
+    color: #4ecca3;
+}
+
+.empty-bill {
+    text-align: center;
+    padding: 40px 20px;
+    opacity: 0.5;
+}
+
+.layout-controls {
+    padding: 10px 20px;
+    background: #0f3460;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.layout-controls label {
+    font-size: 0.9em;
+}
+
+.layout-controls input {
+    width: 60px;
+    padding: 5px;
+    border: none;
+    border-radius: 3px;
+    margin-left: 10px;
+}
+
+.layout-controls button {
+    padding: 5px 15px;
+    background: #4ecca3;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    color: #1a1a2e;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.layout-controls button.active {
+    background: #e94560;
+    color: white;
+}
+
+.edit-mode .product-btn {
+    position: relative;
+}
+
+.edit-mode .product-btn .remove-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e94560;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+
+.edit-mode .product-btn .remove-btn:hover {
+    opacity: 1;
+}
+
+.edit-mode .product-btn.dragging {
+    opacity: 0.5;
+}
+
+.products-grid.edit-mode {
+    grid-template-columns: repeat(20, 50px);
+    grid-template-rows: repeat(10, 50px);
+    gap: 5px;
+    height: 500px;
+    position: relative;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 55px 55px;
+}
+
+.add-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.add-product-btn {
+    padding: 10px;
+    border: 1px dashed #4ecca3;
+    border-radius: 5px;
+    background: rgba(78, 204, 163, 0.1);
+    color: #4ecca3;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+.add-product-btn:hover {
+    background: rgba(78, 204, 163, 0.2);
+}
+
+.success-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.success-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.success-message {
+    background: #4ecca3;
+    color: #1a1a2e;
+    padding: 40px 60px;
+    border-radius: 15px;
+    text-align: center;
+    transform: scale(0.8);
+    transition: transform 0.3s;
+}
+
+.success-overlay.show .success-message {
+    transform: scale(1);
+}
+
+.success-message h2 {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+    }
+
+    .bill-panel {
+        min-width: 100%;
+        max-height: 50vh;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+}

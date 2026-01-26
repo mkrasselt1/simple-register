@@ -13,10 +13,13 @@ class RegisterController extends Controller {
         authenticate();
         
         $articles = getArticles();
-        $articlesJson = json_encode(array_values($articles));
+        $articlesArray = array_map(function($article) {
+            return $article->toArray();
+        }, $articles);
+        $articlesJson = json_encode(array_values($articlesArray));
         
         $this->render('register', [
-            'articles' => $articles,
+            'articles' => $articlesArray,
             'articlesJson' => $articlesJson
         ]);
     }
