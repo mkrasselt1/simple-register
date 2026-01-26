@@ -6,6 +6,9 @@
 require_once __DIR__ . '/config.php';
 
 function authenticate() {
+    if(empty(AUTH_USER) && empty(AUTH_PASS)){
+        return;
+    }
     if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
         sendAuthChallenge();
     }
