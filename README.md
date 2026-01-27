@@ -41,8 +41,8 @@ simple-register/
 │   ├── Controller.php     # Base controller class
 │   └── View.php           # View/template engine
 └── data/                  # JSON data storage (gitignored)
-    ├── articles.json
-    └── transactions.json
+  ├── articles.json
+  └── transactions/      # Each transaction as a single file (timestamp_id.json)
 ```
 
 ## Quick Start
@@ -65,18 +65,34 @@ php -S localhost:8000
 ### Admin Panel
 
 Access the admin panel to manage your articles/products:
+
 - Add new articles with name, price, and button color
 - Edit existing articles
 - Delete articles
 
 ### Register View
 
-The main register interface allows you to:
-- Click product buttons to add items to the current bill
-- View the running total
-- Adjust button size using the layout controls (saved to localStorage)
-- Process payments via Cash or Card buttons
-- Clear the current bill
+The main register interface is fully touch-optimized and offers:
+
+- Large, finger-friendly product buttons (responsive grid)
+- Drag-and-drop and resize of product buttons (auch per Touch)
+- Layout-Editor mit serverseitiger Speicherung (Layouts bleiben auf allen Geräten erhalten)
+- Click or tap product buttons to add items to the current bill
+- View the running total and all items in the bill
+- Process payments via Cash or Card buttons (each payment is logged as a separate file)
+- Clear the current bill with one tap
+- Pull-to-Refresh is blocked on most mobile browsers for uninterrupted operation
+
+### Report View
+
+The report view provides:
+
+- Filtering of transactions by date range
+- Overview of total transactions and total revenue
+- Revenue breakdown by payment method (cash, card, ...)
+- Article statistics: quantity sold and revenue per product
+- List of all recent transactions with details (date, items, amount, payment method, layout)
+- All data is based on the new single-file-per-transaction storage for maximum reliability
 
 ## Architecture
 
@@ -90,20 +106,27 @@ The application follows an MVC-like pattern:
 ### Data Storage
 
 All data is stored in JSON files in the `data/` directory:
+
 - `articles.json` - Product/article definitions
-- `transactions.json` - Payment transaction logs
+- `transactions/` - Each payment transaction as a separate file (format: `timestamp_id.json`)
 
 ## Configuration
 
 Edit `config.php` to change:
+
 - Authentication credentials (`AUTH_USER`, `AUTH_PASS`)
 - Data directory location
 
-## Security Notes
+**Note:** `config.php` is excluded from git commits via `.gitignore`.
+
+## Security & Mobile Notes
 
 - Change the default credentials in `config.php` before deploying
 - For production use, consider using HTTPS
 - The `data/` directory should not be publicly accessible in production
+- `config.php` is excluded from git (see `.gitignore`)
+- The register UI is touch-optimized for tablets/kiosks (large buttons, responsive layout)
+- Pull-to-Refresh is disabled on most mobile browsers for uninterrupted operation
 
 ## Requirements
 
