@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cash Register - Simple Register</title>
-    <link rel="stylesheet" href="views/common.css">
+        <link rel="stylesheet" href="views/common.css">
+        <style>
+            html, body {
+                overscroll-behavior-y: contain;
+                touch-action: manipulation;
+            }
+        </style>
     <link rel="stylesheet" href="views/register.css">
     <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.17/dist/interact.min.js"></script>
     <script>
@@ -14,7 +20,15 @@
     <?php require_once __DIR__ . '/_color_utils.php'; ?>
 </head>
 <body>
-    <div class="header">
+        <script>
+            // Versuche Pull-to-Refresh auf Mobilgeräten zu verhindern
+            window.addEventListener('touchmove', function(e) {
+                if (window.scrollY === 0 && e.touches[0].clientY > 0) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        </script>
+        <div class="header">
         <h1>📋 Cash Register</h1>
         <div class="header-links">
                         <a href="reports.php">📊 Reports</a>
