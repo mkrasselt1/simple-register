@@ -152,11 +152,13 @@
                         <th>Total</th>
                         <th>Method</th>
                         <th>Layout</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($recentTransactions as $transaction): ?>
-                    <tr>
+                    <tr<?php if ($transaction->isCancelled()): ?> style="text-decoration: line-through; opacity: 0.6;"<?php endif; ?>>
                         <td><?php echo View::escape($transaction->getTimestamp()); ?></td>
                         <td>
                             <?php 
@@ -173,6 +175,15 @@
                             </span>
                         </td>
                         <td><?php echo View::escape($transaction->getLayout()); ?></td>
+                        <td><?php echo $transaction->isCancelled() ? 'Cancelled' : 'Active'; ?></td>
+                        <td>
+                            <?php if (!$transaction->isCancelled()): ?>
+                            <form method="post" style="display: inline;">
+                                <input type="hidden" name="transaction_id" value="<?php echo View::escape($transaction->getId()); ?>">
+                                <button type="submit" name="action" value="cancel_transaction" class="btn-danger" onclick="return confirm('Are you sure you want to cancel this transaction?')">Cancel</button>
+                            </form>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

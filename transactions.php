@@ -24,7 +24,8 @@ function getTransactions() {
             $t['total'],
             $t['payment_method'],
             $t['timestamp'],
-            $t['layout'] ?? ''
+            $t['layout'] ?? '',
+            $t['cancelled'] ?? false
         );
     }
     // Nach Zeit sortieren (neueste zuerst)
@@ -51,7 +52,8 @@ function logTransaction($items, $total, $paymentMethod, $layout = '') {
         'total' => (float) $total,
         'payment_method' => $paymentMethod,
         'timestamp' => date('Y-m-d H:i:s', $timestamp),
-        'layout' => $layout
+        'layout' => $layout,
+        'cancelled' => false
     ];
     $filename = TRANSACTIONS_DIR . $timestamp . '_' . $id . '.json';
     file_put_contents($filename, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX);
@@ -65,6 +67,7 @@ function getTransactionStats($startDate = null, $endDate = null) {
     $totalCount = 0;
     
     foreach ($transactions as $transaction) {
+        if ($transaction->isCancelled()) continue;
         $timestamp = strtotime($transaction->getTimestamp());
         if ($startDate && $timestamp < strtotime($startDate)) continue;
         if ($endDate && $timestamp > strtotime($endDate)) continue;
@@ -89,6 +92,7 @@ function getArticleStats($startDate = null, $endDate = null) {
     $transactions = getTransactions();
     $articleStats = [];
     foreach ($transactions as $transaction) {
+        if ($transaction->isCancelled()) continue;
         $timestamp = strtotime($transaction->getTimestamp());
         if ($startDate && $timestamp < strtotime($startDate)) continue;
         if ($endDate && $timestamp > strtotime($endDate)) continue;
@@ -110,4 +114,20 @@ function getArticleStats($startDate = null, $endDate = null) {
         return $b['total_revenue'] <=> $a['total_revenue'];
     });
     return $articleStats;
+}
+
+function cancelTransaction($id) {
+    if (!is_dir(TRANSACTIONS_DIR)) {
+        return false;
+    }
+    $files = glob(TRANSACTIONS_DIR . '*.json');
+    foreach ($files as $file) {
+        $content = file_get_contents($file);
+        $t = json_decode($content, true);
+        if (!$t || $t['id'] !== $id) continue;
+        $t['cancelled'] = true;
+        file_put_contents($file, json_encode($t, JSON_PRETTY_PRINT), LOCK_EX);
+        return true;
+    }
+    return false;
 }

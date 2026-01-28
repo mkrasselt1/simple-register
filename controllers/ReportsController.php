@@ -16,6 +16,11 @@ class ReportsController extends Controller {
             $this->redirect('register.php');
         }
         
+        // Handle form submissions
+        if ($this->isPost()) {
+            $this->handlePost();
+        }
+        
         $startDate = $_GET['start_date'] ?? date('Y-m-d', strtotime('-30 days'));
         $endDate = $_GET['end_date'] ?? date('Y-m-d');
         
@@ -33,5 +38,17 @@ class ReportsController extends Controller {
             'startDate' => $startDate,
             'endDate' => $endDate
         ]);
+    }
+    
+    private function handlePost() {
+        $action = $this->post('action', '');
+        
+        if ($action === 'cancel_transaction') {
+            $id = $this->post('transaction_id', '');
+            if ($id && cancelTransaction($id)) {
+                // Redirect to refresh
+                $this->redirect('reports.php?' . http_build_query($_GET));
+            }
+        }
     }
 }

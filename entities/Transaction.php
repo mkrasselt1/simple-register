@@ -32,8 +32,9 @@ class Transaction {
     private $paymentMethod;
     private $timestamp;
     private $layout;
+    private $cancelled;
 
-    public function __construct($id, $items, $total, $paymentMethod, $timestamp, $layout = null) {
+    public function __construct($id, $items, $total, $paymentMethod, $timestamp, $layout = null, $cancelled = false) {
         $this->id = $id;
         foreach ($items as $item) {
             if ($item instanceof TransactionItem) {
@@ -46,6 +47,7 @@ class Transaction {
         $this->paymentMethod = $paymentMethod;
         $this->timestamp = $timestamp;
         $this->layout = $layout ?? '';
+        $this->cancelled = $cancelled ?? false;
     }
     public function getId() { return $this->id; }
     public function getItems() { return $this->items; }
@@ -53,6 +55,7 @@ class Transaction {
     public function getPaymentMethod() { return $this->paymentMethod; }
     public function getTimestamp() { return $this->timestamp; }
     public function getLayout() { return $this->layout; }
+    public function isCancelled() { return $this->cancelled; }
     public function toArray() {
         return [
             'id' => $this->id,
@@ -60,7 +63,8 @@ class Transaction {
             'total' => $this->total,
             'payment_method' => $this->paymentMethod,
             'timestamp' => $this->timestamp,
-            'layout' => $this->layout
+            'layout' => $this->layout,
+            'cancelled' => $this->cancelled
         ];
     }
 }

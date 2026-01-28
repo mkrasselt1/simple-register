@@ -52,8 +52,20 @@ th {
     cursor: pointer;
     font-weight: 600;
 }
-.button:hover, button:hover, .pay-btn:hover, .clear-btn:hover {
+.button:hover, button:hover, .pay-btn:hover, .clear-btn:hover, .btn-danger:hover {
     background: #3bbd8c;
+}
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.btn-danger:hover {
+    background: #c82333;
 }
 .section {
     background: #16213e;
