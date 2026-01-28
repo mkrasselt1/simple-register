@@ -4,13 +4,17 @@
  */
 
 require_once __DIR__ . '/../core/Controller.php';
-require_once __DIR__ . '/../auth.php';
+require_once __DIR__ . '/AuthController.php';
 require_once __DIR__ . '/../transactions.php';
 
 class ReportsController extends Controller {
     
     public function index() {
-        authenticate();
+        $auth = new AuthController();
+        $auth->checkAuth();
+        if (!in_array('admin', $_SESSION['user']['permissions'])) {
+            $this->redirect('register.php');
+        }
         
         $startDate = $_GET['start_date'] ?? date('Y-m-d', strtotime('-30 days'));
         $endDate = $_GET['end_date'] ?? date('Y-m-d');

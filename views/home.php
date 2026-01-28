@@ -56,6 +56,7 @@
         <div class="nav-links">
             <a href="register.php" class="nav-link">📋 Open Register</a>
             <a href="admin.php" class="nav-link admin">⚙️ Admin Panel</a>
+            <a href="logout.php" class="nav-link">🚪 Logout</a>
         </div>
     </div>
 </body>

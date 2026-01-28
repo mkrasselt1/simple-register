@@ -3,6 +3,7 @@
  * Base Controller Class
  */
 
+require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/View.php';
 
 abstract class Controller {

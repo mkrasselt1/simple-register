@@ -194,6 +194,53 @@
             </table>
             <?php endif; ?>
         </div>
+        
+        <div class="card">
+            <h2>Add User</h2>
+            <form method="post" class="form-inline">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password:</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required>
+                    </div>
+                </div>
+                <button type="submit" name="action" value="add_user" class="btn-success">➕ Add User</button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>Existing Users</h2>
+            <?php if (empty($data['users'])): ?>
+            <div class="no-articles">
+                <p>No users yet.</p>
+            </div>
+            <?php else: ?>
+            <table class="articles-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Permissions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($data['users'] as $user): ?>
+                    <tr>
+                        <td><?php echo View::escape($user['username']); ?></td>
+                        <td><?php echo View::escape(implode(', ', $user['permissions'])); ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <?php endif; ?>
+        </div>
     </div>
 </body>
 </html>

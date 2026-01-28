@@ -4,13 +4,14 @@
  */
 
 require_once __DIR__ . '/../core/Controller.php';
-require_once __DIR__ . '/../auth.php';
+require_once __DIR__ . '/AuthController.php';
 require_once __DIR__ . '/../transactions.php';
 
 class PaymentController extends Controller {
     
     public function process() {
-        authenticate();
+        $auth = new AuthController();
+        $auth->checkAuth();
         
         // Only accept POST requests
         if (!$this->isPost()) {
