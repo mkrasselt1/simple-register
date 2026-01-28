@@ -135,6 +135,7 @@
             <h2>Add New Article</h2>
             <form method="POST">
                 <input type="hidden" name="action" value="add">
+                <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="name">Article Name</label>
@@ -172,6 +173,7 @@
                 <tbody>
                     <?php foreach ($articles as $article): ?>
                     <form method="POST">
+                        <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
                         <tr>
                             <input type="hidden" name="id" value="<?php echo View::escape($article->id); ?>">
                             <td>
@@ -198,6 +200,7 @@
         <div class="card">
             <h2>Add User</h2>
             <form method="post" class="form-inline">
+                <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="username">Username:</label>

@@ -13,6 +13,11 @@ abstract class Controller {
      * @param array $data Data to pass to the view
      */
     protected function render($view, $data = []) {
+        // Generate CSRF token if not exists
+        if (!isset($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        $data['csrf_token'] = $_SESSION['csrf_token'];
         View::display($view, $data);
     }
     
@@ -45,6 +50,22 @@ abstract class Controller {
      */
     protected function post($key, $default = null) {
         return $_POST[$key] ?? $default;
+    }
+    
+    /**
+     * Validate CSRF token
+     * @return bool
+     */
+    protected function validateCsrf() {
+        $token = $this->post('csrf_token');
+        return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+    }
+    
+    /**
+     * Regenerate CSRF token
+     */
+    protected function regenerateCsrf() {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
     
     /**

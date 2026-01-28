@@ -63,9 +63,10 @@
     <div class="container">
         <h1>Login</h1>
         <?php if (isset($data['error'])): ?>
-            <p style="color: red;"><?php echo htmlspecialchars($data['error']); ?></p>
+            <p style="color: red;"><?php echo View::escape($data['error']); ?></p>
         <?php endif; ?>
         <form method="post" action="login.php">
+            <input type="hidden" name="csrf_token" value="<?php echo View::escape($data['csrf_token'] ?? ''); ?>">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
             <label for="password">Password:</label>

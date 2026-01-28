@@ -93,6 +93,16 @@
     </div>
     
     <div class="container">
+        <?php if (isset($data['error'])): ?>
+            <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                <?php echo $data['error']; ?>
+            </div>
+        <?php endif; ?>
+        <?php if (isset($data['message'])): ?>
+            <div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                <?php echo View::escape($data['message']); ?>
+            </div>
+        <?php endif; ?>
         <div class="filters">
             <form method="GET">
                 <label>From:</label>
@@ -178,7 +188,8 @@
                         <td><?php echo $transaction->isCancelled() ? 'Cancelled' : 'Active'; ?></td>
                         <td>
                             <?php if (!$transaction->isCancelled()): ?>
-                            <form method="post" style="display: inline;">
+                            <form method="post" action="reports.php" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
                                 <input type="hidden" name="transaction_id" value="<?php echo View::escape($transaction->getId()); ?>">
                                 <button type="submit" name="action" value="cancel_transaction" class="btn-danger" onclick="return confirm('Are you sure you want to cancel this transaction?')">Cancel</button>
                             </form>

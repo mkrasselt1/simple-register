@@ -17,7 +17,10 @@ function getTransactions() {
     foreach ($files as $file) {
         $content = file_get_contents($file);
         $t = json_decode($content, true);
-        if (!$t) continue;
+        if ($t === null && json_last_error() !== JSON_ERROR_NONE) {
+            // Skip corrupted files
+            continue;
+        }
         $result[] = new Transaction(
             $t['id'],
             $t['items'],
@@ -117,17 +120,27 @@ function getArticleStats($startDate = null, $endDate = null) {
 }
 
 function cancelTransaction($id) {
+    $log = "Attempting to cancel transaction: $id\n";
     if (!is_dir(TRANSACTIONS_DIR)) {
-        return false;
+        $log .= "TRANSACTIONS_DIR does not exist: " . TRANSACTIONS_DIR . "\n";
+        return [false, $log];
     }
     $files = glob(TRANSACTIONS_DIR . '*.json');
+    $log .= "Found " . count($files) . " transaction files\n";
     foreach ($files as $file) {
         $content = file_get_contents($file);
         $t = json_decode($content, true);
+        if ($t === null) {
+            $log .= "JSON decode failed for $file: " . json_last_error_msg() . "\n";
+            continue;
+        }
+        $log .= "Checking file: $file, ID: " . ($t['id'] ?? 'none') . "\n";
         if (!$t || $t['id'] !== $id) continue;
         $t['cancelled'] = true;
-        file_put_contents($file, json_encode($t, JSON_PRETTY_PRINT), LOCK_EX);
-        return true;
+        $result = file_put_contents($file, json_encode($t, JSON_PRETTY_PRINT), LOCK_EX);
+        $log .= "Updated file: $file, result: $result\n";
+        return [$result !== false, $log];
     }
-    return false;
+    $log .= "Transaction $id not found\n";
+    return [false, $log];
 }

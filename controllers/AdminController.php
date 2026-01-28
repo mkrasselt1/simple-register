@@ -36,20 +36,34 @@ class AdminController extends Controller {
     }
     
     private function handlePost() {
+        if (!$this->validateCsrf()) {
+            $this->message = 'Invalid request';
+            $this->messageType = 'error';
+            return;
+        }
+        // Valid, now handle
         $action = $this->post('action', '');
         
         switch ($action) {
             case 'add':
-                $this->addArticle();
+                if ($this->addArticle()) {
+                    $this->regenerateCsrf();
+                }
                 break;
             case 'update':
-                $this->updateArticle();
+                if ($this->updateArticle()) {
+                    $this->regenerateCsrf();
+                }
                 break;
             case 'delete':
-                $this->deleteArticle();
+                if ($this->deleteArticle()) {
+                    $this->regenerateCsrf();
+                }
                 break;
             case 'add_user':
-                $this->addUser();
+                if ($this->addUser()) {
+                    $this->regenerateCsrf();
+                }
                 break;
         }
     }

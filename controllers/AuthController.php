@@ -9,6 +9,10 @@ class AuthController extends Controller {
 
     public function login() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!$this->validateCsrf()) {
+                $this->render('login', ['error' => 'Invalid request']);
+                return;
+            }
             $username = $this->post('username');
             $password = $this->post('password');
 
@@ -19,6 +23,8 @@ class AuthController extends Controller {
                         'username' => $user['username'],
                         'permissions' => $user['permissions']
                     ];
+                    session_regenerate_id(true);
+                    $this->regenerateCsrf();
                     $this->redirect('register.php');
                 }
             }
