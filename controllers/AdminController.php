@@ -73,7 +73,7 @@ class AdminController extends Controller {
         $price = floatval($this->post('price', 0));
         $color = $this->post('color', '#007bff');
         
-        if ($name && $price > 0) {
+        if ($name && $price > - 5) {
             addArticle($name, $price, $color);
             $this->message = 'Article added successfully!';
             $this->messageType = 'success';
