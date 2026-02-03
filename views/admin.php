@@ -221,7 +221,7 @@
         
         <div class="card">
             <h2>Existing Users</h2>
-            <?php if (empty($data['users'])): ?>
+            <?php if (empty($users)): ?>
             <div class="no-articles">
                 <p>No users yet.</p>
             </div>
@@ -234,7 +234,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($data['users'] as $user): ?>
+                    <?php foreach ($users as $user): ?>
                     <tr>
                         <td><?php echo View::escape($user['username']); ?></td>
                         <td><?php echo View::escape(implode(', ', $user['permissions'])); ?></td>
@@ -243,6 +243,34 @@
                 </tbody>
             </table>
             <?php endif; ?>
+        </div>
+        
+        <div class="card">
+            <h2>Backup & Restore</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Download Backup</label>
+                    <p style="color: #ccc; margin: 5px 0;">
+                        Download all config files, transactions, and articles as a ZIP file.</p>
+                    <form method="POST" style="display: inline;">
+                        <input type="hidden" name="action" value="backup">
+                        <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
+                        <button type="submit" class="btn-primary">📥 Download Backup</button>
+                    </form>
+                </div>
+                <div class="form-group">
+                    <label for="backup_file">Upload Restore</label>
+                    <p style="color: #ccc; margin: 5px 0;">
+                        Upload a backup ZIP file to restore all data.</p>
+                    <form method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="action" value="restore">
+                        <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
+                        <input type="file" id="backup_file" name="backup_file" accept=".zip" required style="margin-bottom: 10px;">
+                        <br>
+                        <button type="submit" class="btn-success">📤 Restore from Backup</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </body>

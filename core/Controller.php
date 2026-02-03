@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Base Controller Class
  */
@@ -20,7 +21,7 @@ abstract class Controller {
         $data['csrf_token'] = $_SESSION['csrf_token'];
         View::display($view, $data);
     }
-    
+
     /**
      * Redirect to another URL
      * @param string $url URL to redirect to
@@ -29,7 +30,7 @@ abstract class Controller {
         header("Location: {$url}");
         exit;
     }
-    
+
     /**
      * Send JSON response
      * @param mixed $data Data to send
@@ -41,7 +42,7 @@ abstract class Controller {
         echo json_encode($data);
         exit;
     }
-    
+
     /**
      * Get POST data
      * @param string $key Key to get
@@ -51,7 +52,7 @@ abstract class Controller {
     protected function post($key, $default = null) {
         return $_POST[$key] ?? $default;
     }
-    
+
     /**
      * Validate CSRF token
      * @return bool
@@ -60,14 +61,14 @@ abstract class Controller {
         $token = $this->post('csrf_token');
         return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
     }
-    
+
     /**
      * Regenerate CSRF token
      */
     protected function regenerateCsrf() {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
-    
+
     /**
      * Get GET data
      * @param string $key Key to get
@@ -77,7 +78,7 @@ abstract class Controller {
     protected function get($key, $default = null) {
         return $_GET[$key] ?? $default;
     }
-    
+
     /**
      * Check if request is POST
      * @return bool
@@ -85,7 +86,7 @@ abstract class Controller {
     protected function isPost() {
         return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
-    
+
     /**
      * Get JSON input
      * @return array|null Returns null if JSON is invalid

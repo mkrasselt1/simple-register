@@ -13,6 +13,22 @@ if (!is_dir(DATA_DIR)) {
     mkdir(DATA_DIR, 0755, true);
 }
 
+// Transactions directory
+define('TRANSACTIONS_DIR', __DIR__ . '/transactions');
+
+// Create transactions directory if it doesn't exist
+if (!is_dir(TRANSACTIONS_DIR)) {
+    mkdir(TRANSACTIONS_DIR, 0755, true);
+}
+
+// Layouts directory
+define('LAYOUTS_DIR', __DIR__ . '/layouts');
+
+// Create layouts directory if it doesn't exist
+if (!is_dir(LAYOUTS_DIR)) {
+    mkdir(LAYOUTS_DIR, 0755, true);
+}
+
 // Articles file
 define('ARTICLES_FILE', DATA_DIR . '/articles.json');
 
