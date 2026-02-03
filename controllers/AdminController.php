@@ -301,16 +301,22 @@ class AdminController extends Controller
 
     private function addDirectoryToZip($zip, $dir, $zipPath)
     {
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($dir),
-            RecursiveIteratorIterator::LEAVES_ONLY
-        );
+        $this->addFilesToZipRecursive($zip, realpath($dir), $zipPath);
+    }
 
+    private function addFilesToZipRecursive($zip, $dir, $zipPath)
+    {
+        $files = scandir($dir);
         foreach ($files as $file) {
-            if (!$file->isDir()) {
-                $filePath = $file->getRealPath();
-                $relativePath = substr($filePath, strlen($dir) + 1);
-                $zip->addFile($filePath, $zipPath . '/' . $relativePath);
+            if ($file === '.' || $file === '..') continue;
+            
+            $fullPath = $dir . '/' . $file;
+            $relativePath = $zipPath . '/' . $file;
+            
+            if (is_dir($fullPath)) {
+                $this->addFilesToZipRecursive($zip, $fullPath, $relativePath);
+            } else {
+                $zip->addFile($fullPath, $relativePath);
             }
         }
     }
