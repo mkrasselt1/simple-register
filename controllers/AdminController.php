@@ -176,32 +176,18 @@ class AdminController extends Controller
 
     private function downloadBackup()
     {
-        $files = [
-            'data/articles.json',
-            'data/transactions.json',
-            'data/users.json',
-            'layouts/default.json'
-        ];
-
-        // Add all transaction files
-        $transactionDir = __DIR__ . '/../transactions';
-        if (is_dir($transactionDir)) {
-            $transactionFiles = glob($transactionDir . '/*.json');
-            foreach ($transactionFiles as $file) {
-                $files[] = 'transactions/' . basename($file);
-            }
+        if (!class_exists('ZipArchive')) {
+            $this->message = 'ZIP extension is not available. Please contact your administrator.';
+            $this->messageType = 'error';
+            return;
         }
 
+        $dataDir = __DIR__ . '/../data';
         $zip = new ZipArchive();
         $zipFile = tempnam(sys_get_temp_dir(), 'backup') . '.zip';
 
         if ($zip->open($zipFile, ZipArchive::CREATE) === true) {
-            foreach ($files as $file) {
-                $fullPath = __DIR__ . '/../' . $file;
-                if (file_exists($fullPath)) {
-                    $zip->addFile($fullPath, $file);
-                }
-            }
+            $this->addDirectoryToZip($zip, $dataDir, 'data');
             $zip->close();
 
             header('Content-Type: application/zip');
@@ -224,6 +210,12 @@ class AdminController extends Controller
             return false;
         }
 
+        if (!class_exists('ZipArchive')) {
+            $this->message = 'ZIP extension is not available. Please contact your administrator.';
+            $this->messageType = 'error';
+            return false;
+        }
+
         $file = $_FILES['backup_file'];
         $allowedTypes = ['application/zip', 'application/x-zip-compressed'];
 
@@ -241,37 +233,19 @@ class AdminController extends Controller
             $zip->extractTo($extractPath);
             $zip->close();
 
-            // Validate and move files
-            $filesToRestore = [
-                'data/articles.json' => ARTICLES_FILE,
-                'data/transactions.json' => TRANSACTIONS_FILE,
-                'data/users.json' => USERS_FILE,
-                'layouts/default.json' => __DIR__ . '/../layouts/default.json'
-            ];
+            // Restore the entire data directory
+            $dataSourceDir = $extractPath . '/data';
+            $dataTargetDir = __DIR__ . '/../data';
 
-            $success = true;
-            foreach ($filesToRestore as $zipPath => $targetPath) {
-                $sourcePath = $extractPath . '/' . $zipPath;
-                if (file_exists($sourcePath)) {
-                    if (!copy($sourcePath, $targetPath)) {
-                        $success = false;
-                        break;
-                    }
-                }
-            }
+            if (is_dir($dataSourceDir)) {
+                // First, remove existing data directory contents (except .htaccess maybe?)
+                $this->deleteDirectoryContents($dataTargetDir);
 
-            // Restore transaction files
-            $transactionSourceDir = $extractPath . '/transactions';
-            $transactionTargetDir = __DIR__ . '/../transactions';
-            if (is_dir($transactionSourceDir)) {
-                $transactionFiles = glob($transactionSourceDir . '/*.json');
-                foreach ($transactionFiles as $file) {
-                    $targetFile = $transactionTargetDir . '/' . basename($file);
-                    if (!copy($file, $targetFile)) {
-                        $success = false;
-                        break;
-                    }
-                }
+                // Copy all files from backup
+                $this->copyDirectory($dataSourceDir, $dataTargetDir);
+                $success = true;
+            } else {
+                $success = false;
             }
 
             // Clean up
@@ -290,6 +264,54 @@ class AdminController extends Controller
             $this->message = 'Invalid ZIP file.';
             $this->messageType = 'error';
             return false;
+        }
+    }
+
+    private function copyDirectory($src, $dst)
+    {
+        $dir = opendir($src);
+        @mkdir($dst);
+        while (false !== ($file = readdir($dir))) {
+            if (($file != '.') && ($file != '..')) {
+                if (is_dir($src . '/' . $file)) {
+                    $this->copyDirectory($src . '/' . $file, $dst . '/' . $file);
+                } else {
+                    copy($src . '/' . $file, $dst . '/' . $file);
+                }
+            }
+        }
+        closedir($dir);
+    }
+
+    private function deleteDirectoryContents($dir)
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = $dir . '/' . $file;
+            if (is_dir($path)) {
+                $this->deleteDirectory($path);
+            } else {
+                unlink($path);
+            }
+        }
+    }
+
+    private function addDirectoryToZip($zip, $dir, $zipPath)
+    {
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($files as $file) {
+            if (!$file->isDir()) {
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filePath, strlen($dir) + 1);
+                $zip->addFile($filePath, $zipPath . '/' . $relativePath);
+            }
         }
     }
 
