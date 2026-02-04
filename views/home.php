@@ -59,7 +59,9 @@
         <p style="color: #666; margin-bottom: 40px;"><?php echo $__('welcome_subtitle'); ?></p>
         <div class="nav-links">
             <a href="register.php" class="nav-link">📋 <?php echo $__('go_to_register'); ?></a>
+            <?php if (isset($_SESSION['user']) && in_array('admin', $_SESSION['user']['permissions'])): ?>
             <a href="admin.php" class="nav-link admin">⚙️ <?php echo $__('go_to_admin'); ?></a>
+            <?php endif; ?>
             <a href="logout.php" class="nav-link">🚪 <?php echo $__('logout'); ?></a>
         </div>
     </div>

@@ -20,10 +20,37 @@ $availableLangs = $lang->getAvailableLanguages();
 </div>
 
 <script>
-function changeLanguage(lang) {
-    // Add language parameter to current URL
-    const url = new URL(window.location);
-    url.searchParams.set('lang', lang);
-    window.location.href = url.toString();
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('language-select');
+    const storedLang = localStorage.getItem('language');
+    if (storedLang && select.querySelector(`option[value="${storedLang}"]`)) {
+        select.value = storedLang;
+        // If stored lang differs from current, set it
+        if (storedLang !== '<?php echo $currentLang; ?>') {
+            changeLanguage(storedLang, false); // false to not store again
+        }
+    }
+});
+
+function changeLanguage(lang, store = true) {
+    if (store) {
+        localStorage.setItem('language', lang);
+    }
+    // Send AJAX to set session
+    fetch('api/language.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'language=' + encodeURIComponent(lang)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload page to apply new language
+            window.location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
 }
 </script>

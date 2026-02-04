@@ -38,20 +38,25 @@
         <div class="header">
         <h1>📋 <?php echo $__('register'); ?></h1>
         <div class="header-links">
+                        <?php if (isset($_SESSION['user']) && in_array('admin', $_SESSION['user']['permissions'])): ?>
                         <a href="reports.php">📊 <?php echo $__('reports'); ?></a>
                         <a href="admin.php">⚙️ <?php echo $__('admin'); ?></a>
+                        <?php endif; ?>
                         <a href="index.php">🏠 <?php echo $__('home'); ?></a>
-                        <?php include '_language_selector.php'; ?>
                         <span style="margin-left:16px; display:inline-flex; align-items:center; gap:6px;">
                             <select id="layoutSelect"></select>
+                            <?php if (isset($_SESSION['user']) && in_array('admin', $_SESSION['user']['permissions'])): ?>
                             <button id="saveLayoutBtn" style="padding:2px 8px;">💾</button>
+                            <?php endif; ?>
                         </span>
         </div>
     </div>
 
     <div class="layout-controls">
         <div>
+            <?php if (isset($_SESSION['user']) && in_array('admin', $_SESSION['user']['permissions'])): ?>
             <button id="editModeBtn" onclick="toggleEditMode()">✏️ <?php echo $__('edit_layout'); ?></button>
+            <?php endif; ?>
         </div>
     </div>
 

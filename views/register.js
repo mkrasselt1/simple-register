@@ -830,13 +830,28 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  if (layoutSelect && saveLayoutBtn) {
+  if (layoutSelect) {
     layoutSelect.addEventListener('change', e => {
       if (layoutSelect.value) {
         loadLayoutFromServer(layoutSelect.value);
       }
     });
-    saveLayoutBtn.addEventListener('click', saveLayoutToServer);
     fetchLayouts();
   }
+
+  if (saveLayoutBtn) {
+    saveLayoutBtn.addEventListener('click', saveLayoutToServer);
+  }
 });
+
+// Keep session alive by pinging server every 5 minutes
+setInterval(() => {
+  fetch('api/keepalive.php')
+    .then(response => response.json())
+    .then(data => {
+      if (data.status !== 'ok') {
+        console.warn('Keep-alive failed');
+      }
+    })
+    .catch(error => console.error('Keep-alive error:', error));
+}, 5 * 60 * 1000); // 5 minutes
