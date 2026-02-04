@@ -6,7 +6,8 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/entities/Transaction.php';
 
-define('TRANSACTIONS_DIR', __DIR__ . '/data/transactions/');
+// Use the constant from config.php instead of redefining it
+// define('TRANSACTIONS_DIR', __DIR__ . '/data/transactions/');
 
 function getTransactions() {
     if (!is_dir(TRANSACTIONS_DIR)) {
