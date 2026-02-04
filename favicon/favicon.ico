@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <style>
+      .cash-register { fill: #4ecca3; }
+      .cash-register-outline { fill: none; stroke: #4ecca3; stroke-width: 1; }
+      .euro { fill: #ffffff; }
+    </style>
+  </defs>
+
+  <!-- Cash register body -->
+  <rect x="2" y="8" width="28" height="16" rx="2" class="cash-register-outline"/>
+  <rect x="3" y="9" width="26" height="14" rx="1" class="cash-register"/>
+
+  <!-- Display screen -->
+  <rect x="6" y="12" width="12" height="6" rx="1" fill="#1a1a2e"/>
+  <rect x="7" y="13" width="10" height="4" fill="#000000"/>
+
+  <!-- Euro symbol on display -->
+  <text x="12" y="16" text-anchor="middle" class="euro" font-family="Arial, sans-serif" font-size="3" font-weight="bold">€</text>
+
+  <!-- Keys -->
+  <circle cx="22" cy="14" r="1.5" fill="#ffffff"/>
+  <circle cx="26" cy="14" r="1.5" fill="#ffffff"/>
+  <circle cx="22" cy="18" r="1.5" fill="#ffffff"/>
+  <circle cx="26" cy="18" r="1.5" fill="#ffffff"/>
+
+  <!-- Receipt -->
+  <rect x="20" y="4" width="8" height="3" rx="0.5" fill="#ffffff"/>
+  <line x1="21" y1="5" x2="27" y2="5" stroke="#4ecca3" stroke-width="0.5"/>
+  <line x1="21" y1="6" x2="25" y2="6" stroke="#4ecca3" stroke-width="0.5"/>
+</svg>
