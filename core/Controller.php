@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/View.php';
+require_once __DIR__ . '/Language.php';
 
 abstract class Controller {
     /**
@@ -94,5 +95,26 @@ abstract class Controller {
     protected function getJsonInput() {
         $input = json_decode(file_get_contents('php://input'), true);
         return $input;
+    }
+
+    /**
+     * Get language instance
+     */
+    protected function lang() {
+        return Language::getInstance();
+    }
+
+    /**
+     * Set language
+     */
+    protected function setLanguage($lang) {
+        $this->lang()->setLanguage($lang);
+    }
+
+    /**
+     * Get translated string
+     */
+    protected function t($key, $default = null) {
+        return $this->lang()->get($key, $default);
     }
 }

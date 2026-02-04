@@ -3,6 +3,8 @@
  * Simple View/Template Engine
  */
 
+require_once __DIR__ . '/Language.php';
+
 class View {
     private static $viewPath = __DIR__ . '/../views/';
     
@@ -13,6 +15,12 @@ class View {
      * @return string Rendered HTML
      */
     public static function render($template, $data = []) {
+        // Add language instance to data
+        $data['lang'] = Language::getInstance();
+        $data['__'] = function($key, $default = null) {
+            return Language::getInstance()->get($key, $default);
+        };
+        
         // Extract data to make variables available in template
         extract($data);
         

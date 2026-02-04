@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $lang->getLanguage(); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Simple Register</title>
+    <title><?php echo $__('login_title'); ?></title>
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
     <link rel="stylesheet" href="views/common.css">
@@ -62,18 +62,19 @@
     </style>
 </head>
 <body>
+    <?php include '_language_selector.php'; ?>
     <div class="container">
-        <h1>Login</h1>
+        <h1><?php echo $__('login'); ?></h1>
         <?php if (isset($data['error'])): ?>
             <p style="color: red;"><?php echo View::escape($data['error']); ?></p>
         <?php endif; ?>
         <form method="post" action="login.php">
             <input type="hidden" name="csrf_token" value="<?php echo View::escape($data['csrf_token'] ?? ''); ?>">
-            <label for="username">Username:</label>
+            <label for="username"><?php echo $__('username'); ?>:</label>
             <input type="text" id="username" name="username" required>
-            <label for="password">Password:</label>
+            <label for="password"><?php echo $__('password'); ?>:</label>
             <input type="password" id="password" name="password" required>
-            <button type="submit">Login</button>
+            <button type="submit"><?php echo $__('login_button'); ?></button>
         </form>
     </div>
 </body>

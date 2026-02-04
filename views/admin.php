@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $lang->getLanguage(); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Simple Register</title>
+    <title><?php echo $__('admin_title'); ?></title>
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
     <link rel="stylesheet" href="views/common.css">
@@ -117,12 +117,13 @@
     </style>
 </head>
 <body>
+    <?php include '_language_selector.php'; ?>
     <div class="header">
-        <h1>⚙️ Admin Panel</h1>
+        <h1>⚙️ <?php echo $__('admin'); ?></h1>
         <div class="header-links">
-            <a href="register.php">🛒 Register</a>
-            <a href="reports.php">📊 Reports</a>
-            <a href="index.php">🏠 Home</a>
+            <a href="register.php">🛒 <?php echo $__('register'); ?></a>
+            <a href="reports.php">📊 <?php echo $__('reports'); ?></a>
+            <a href="index.php">🏠 <?php echo $__('home'); ?></a>
         </div>
     </div>
     
@@ -134,21 +135,21 @@
         <?php endif; ?>
         
         <div class="card">
-            <h2>Add New Article</h2>
+            <h2><?php echo $__('add_new_article'); ?></h2>
             <form method="POST">
                 <input type="hidden" name="action" value="add">
                 <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="name">Article Name</label>
+                        <label for="name"><?php echo $__('article_name'); ?></label>
                         <input type="text" id="name" name="name" required placeholder="e.g., Coffee">
                     </div>
                     <div class="form-group">
-                        <label for="price">Price (€)</label>
+                        <label for="price"><?php echo $__('price'); ?> (€)</label>
                         <input type="number" id="price" name="price" step="0.01" min="-5.00" required placeholder="2.50">
                     </div>
                     <div class="form-group">
-                        <label for="color">Button Color</label>
+                        <label for="color"><?php echo $lang->get('button_color'); ?></label>
                         <input type="color" id="color" name="color" value="#007bff">
                     </div>
                 </div>
@@ -157,19 +158,19 @@
         </div>
         
         <div class="card">
-            <h2>Manage Articles</h2>
+            <h2><?php echo $__('manage_articles'); ?></h2>
             <?php if (empty($articles)): ?>
             <div class="no-articles">
-                <p>No articles yet. Add your first article above!</p>
+                <p><?php echo $__('no_articles_yet'); ?></p>
             </div>
             <?php else: ?>
             <table class="articles-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th><?php echo $__('name'); ?></th>
                         <th>Price</th>
                         <th>Color</th>
-                        <th>Actions</th>
+                        <th><?php echo $lang->get('actions'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -188,8 +189,8 @@
                                 <input type="color" name="color" value="<?php echo View::escape($article->color ?? '#007bff'); ?>">
                             </td>
                             <td class="actions">
-                                <button type="submit" name="action" value="update" class="btn-primary">💾 Save</button>
-                                <button type="submit" name="action" value="delete" class="btn-danger" onclick="return confirm('Are you sure?')">🗑️ Delete</button>
+                                <button type="submit" name="action" value="update" class="btn-primary">💾 <?php echo $lang->get('save'); ?></button>
+                                <button type="submit" name="action" value="delete" class="btn-danger" onclick="return confirm('<?php echo $lang->get('are_you_sure'); ?>')">🗑️ <?php echo $lang->get('delete'); ?></button>
                             </td>
                         </tr>
                     </form>
@@ -200,39 +201,39 @@
         </div>
         
         <div class="card">
-            <h2>Add User</h2>
+            <h2><?php echo $lang->get('add_user'); ?></h2>
             <form method="post" class="form-inline">
                 <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="username">Username:</label>
+                        <label for="username"><?php echo $lang->get('username'); ?>:</label>
                         <input type="text" id="username" name="username" required>
                     </div>
                     <div class="form-group">
-                        <label for="password">Password:</label>
+                        <label for="password"><?php echo $lang->get('password'); ?>:</label>
                         <input type="password" id="password" name="password" required>
                     </div>
                     <div class="form-group">
-                        <label for="confirm_password">Confirm Password:</label>
+                        <label for="confirm_password"><?php echo $lang->get('confirm_password'); ?>:</label>
                         <input type="password" id="confirm_password" name="confirm_password" required>
                     </div>
                 </div>
-                <button type="submit" name="action" value="add_user" class="btn-success">➕ Add User</button>
+                <button type="submit" name="action" value="add_user" class="btn-success">➕ <?php echo $lang->get('add_user_button'); ?></button>
             </form>
         </div>
         
         <div class="card">
-            <h2>Existing Users</h2>
+            <h2><?php echo $lang->get('existing_users'); ?></h2>
             <?php if (empty($users)): ?>
             <div class="no-articles">
-                <p>No users yet.</p>
+                <p><?php echo $lang->get('no_users_yet'); ?></p>
             </div>
             <?php else: ?>
             <table class="articles-table">
                 <thead>
                     <tr>
-                        <th>Username</th>
-                        <th>Permissions</th>
+                        <th><?php echo $lang->get('username'); ?></th>
+                        <th><?php echo $lang->get('permissions'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -248,28 +249,28 @@
         </div>
         
         <div class="card">
-            <h2>Backup & Restore</h2>
+            <h2><?php echo $lang->get('backup_restore'); ?></h2>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Download Backup</label>
+                    <label><?php echo $lang->get('download_backup'); ?></label>
                     <p style="color: #ccc; margin: 5px 0;">
-                        Download all config files, transactions, and articles as a ZIP file.</p>
+                        <?php echo $lang->get('download_backup_description'); ?></p>
                     <form method="POST" style="display: inline;">
                         <input type="hidden" name="action" value="backup">
                         <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
-                        <button type="submit" class="btn-primary">📥 Download Backup</button>
+                        <button type="submit" class="btn-primary">📥 <?php echo $lang->get('download_backup_button'); ?></button>
                     </form>
                 </div>
                 <div class="form-group">
-                    <label for="backup_file">Upload Restore</label>
+                    <label for="backup_file"><?php echo $lang->get('upload_restore'); ?></label>
                     <p style="color: #ccc; margin: 5px 0;">
-                        Upload a backup ZIP file to restore all data.</p>
+                        <?php echo $lang->get('upload_backup_description'); ?></p>
                     <form method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="restore">
                         <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
                         <input type="file" id="backup_file" name="backup_file" accept=".zip" required style="margin-bottom: 10px;">
                         <br>
-                        <button type="submit" class="btn-success">📤 Restore from Backup</button>
+                        <button type="submit" class="btn-success">📤 <?php echo $lang->get('restore_from_backup'); ?></button>
                     </form>
                 </div>
             </div>

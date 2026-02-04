@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Register</title>
+    <title><?php echo $__('welcome_title'); ?></title>
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
     <style>
@@ -53,12 +53,14 @@
     </style>
 </head>
 <body>
+    <?php include '_language_selector.php'; ?>
     <div class="container">
-        <h1>Simple Register</h1>
+        <h1><?php echo $__('welcome_title'); ?></h1>
+        <p style="color: #666; margin-bottom: 40px;"><?php echo $__('welcome_subtitle'); ?></p>
         <div class="nav-links">
-            <a href="register.php" class="nav-link">📋 Open Register</a>
-            <a href="admin.php" class="nav-link admin">⚙️ Admin Panel</a>
-            <a href="logout.php" class="nav-link">🚪 Logout</a>
+            <a href="register.php" class="nav-link">📋 <?php echo $__('go_to_register'); ?></a>
+            <a href="admin.php" class="nav-link admin">⚙️ <?php echo $__('go_to_admin'); ?></a>
+            <a href="logout.php" class="nav-link">🚪 <?php echo $__('logout'); ?></a>
         </div>
     </div>
 </body>

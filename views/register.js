@@ -707,12 +707,12 @@ function pay(method) {
         showSuccess(method, total);
         clearCart();
       } else {
-        alert("Payment failed: " + (data.error || "Unknown error"));
+        alert(translations.payment_failed + ": " + (data.error || translations.unknown_error));
       }
     })
     .catch((err) => {
       console.error("Payment error:", err);
-      alert("Payment failed. Please try again.");
+      alert(translations.payment_failed_try_again);
     });
 }
 
