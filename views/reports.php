@@ -108,39 +108,39 @@
         <?php endif; ?>
         <div class="filters">
             <form method="GET">
-                <label>From:</label>
+                <label><?php echo $__('from'); ?>:</label>
                 <input type="date" name="start_date" value="<?php echo View::escape($startDate); ?>">
-                <label>To:</label>
+                <label><?php echo $__('to'); ?>:</label>
                 <input type="date" name="end_date" value="<?php echo View::escape($endDate); ?>">
-                <button type="submit">🔍 Filter</button>
+                <button type="submit">🔍 <?php echo $__('filter'); ?></button>
             </form>
         </div>
         
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value"><?php echo number_format($stats['total_transactions']); ?></div>
-                <div class="stat-label">Total Transactions</div>
+                <div class="stat-label"><?php echo $__('total_transactions'); ?></div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">€<?php echo number_format($stats['total_revenue'], 2); ?></div>
-                <div class="stat-label">Total Revenue</div>
+                <div class="stat-label"><?php echo $__('total_sales'); ?></div>
             </div>
             <?php foreach ($stats['methods'] as $method => $data): ?>
             <div class="stat-card">
                 <div class="stat-value">€<?php echo number_format($data['revenue'], 2); ?></div>
-                <div class="stat-label"><?php echo ucfirst($method); ?> Revenue</div>
+                <div class="stat-label"><?php echo ucfirst($method); ?> <?php echo $__('revenue'); ?></div>
             </div>
             <?php endforeach; ?>
         </div>
         
         <div class="section">
-            <h2>Article Statistics</h2>
+            <h2><?php echo $__('article_statistics'); ?></h2>
             <table>
                 <thead>
                     <tr>
-                        <th>Article</th>
-                        <th>Quantity Sold</th>
-                        <th>Revenue</th>
+                        <th><?php echo $__('article'); ?></th>
+                        <th><?php echo $__('quantity_sold'); ?></th>
+                        <th><?php echo $__('revenue'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -156,17 +156,17 @@
         </div>
         
         <div class="section">
-            <h2>Recent Transactions</h2>
+            <h2><?php echo $__('recent_transactions'); ?></h2>
             <table>
                 <thead>
                     <tr>
-                        <th>Date/Time</th>
-                        <th>Items</th>
-                        <th>Total</th>
-                        <th>Method</th>
-                        <th>Layout</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th><?php echo $__('date_time'); ?></th>
+                        <th><?php echo $__('items'); ?></th>
+                        <th><?php echo $__('total'); ?></th>
+                        <th><?php echo $__('payment_method'); ?></th>
+                        <th><?php echo $__('layout'); ?></th>
+                        <th><?php echo $__('status'); ?></th>
+                        <th><?php echo $__('actions'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -188,13 +188,13 @@
                             </span>
                         </td>
                         <td><?php echo View::escape($transaction->getLayout()); ?></td>
-                        <td><?php echo $transaction->isCancelled() ? 'Cancelled' : 'Active'; ?></td>
+                        <td><?php echo $transaction->isCancelled() ? $__('cancelled') : $__('active'); ?></td>
                         <td>
                             <?php if (!$transaction->isCancelled()): ?>
                             <form method="post" action="reports.php" style="display: inline;">
                                 <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
                                 <input type="hidden" name="transaction_id" value="<?php echo View::escape($transaction->getId()); ?>">
-                                <button type="submit" name="action" value="cancel_transaction" class="btn-danger" onclick="return confirm('Are you sure you want to cancel this transaction?')">Cancel</button>
+                                <button type="submit" name="action" value="cancel_transaction" class="btn-danger" onclick="return confirm('<?php echo $__('confirm_cancel_transaction'); ?>')"><?php echo $__('cancel'); ?></button>
                             </form>
                             <?php endif; ?>
                         </td>

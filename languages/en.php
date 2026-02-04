@@ -89,6 +89,15 @@ return [
     'time' => 'Time',
     'items' => 'Items',
     'payment_method' => 'Payment Method',
+    'article_statistics' => 'Article Statistics',
+    'article' => 'Article',
+    'quantity_sold' => 'Quantity Sold',
+    'date_time' => 'Date/Time',
+    'layout' => 'Layout',
+    'status' => 'Status',
+    'cancelled' => 'Cancelled',
+    'active' => 'Active',
+    'confirm_cancel_transaction' => 'Are you sure you want to cancel this transaction?',
 
     // Backup & Restore
     'backup_restore' => 'Backup & Restore',

@@ -89,6 +89,15 @@ return [
     'time' => 'Zeit',
     'items' => 'Artikel',
     'payment_method' => 'Zahlungsart',
+    'article_statistics' => 'Artikelstatistiken',
+    'article' => 'Artikel',
+    'quantity_sold' => 'Verkaufte Menge',
+    'date_time' => 'Datum/Zeit',
+    'layout' => 'Layout',
+    'status' => 'Status',
+    'cancelled' => 'Storniert',
+    'active' => 'Aktiv',
+    'confirm_cancel_transaction' => 'Sind Sie sicher, dass Sie diese Transaktion stornieren möchten?',
 
     // Backup & Restore
     'backup_restore' => 'Sicherung & Wiederherstellung',
