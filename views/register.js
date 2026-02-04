@@ -699,6 +699,7 @@ function pay(method) {
       total: total,
       method: method,
       layout: layout,
+      timestamp: Math.floor(Date.now() / 1000), // Client timestamp
     }),
   })
     .then((response) => response.json())

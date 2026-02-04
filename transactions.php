@@ -44,11 +44,11 @@ function saveTransactions($transactions) {
     return true;
 }
 
-function logTransaction($items, $total, $paymentMethod, $layout = '') {
+function logTransaction($items, $total, $paymentMethod, $layout = '', $timestamp = null) {
     if (!is_dir(TRANSACTIONS_DIR)) {
         mkdir(TRANSACTIONS_DIR, 0777, true);
     }
-    $timestamp = time();
+    $timestamp = $timestamp ?: time(); // Use provided timestamp or current time
     $id = bin2hex(random_bytes(8));
     $data = [
         'id' => $id,

@@ -37,9 +37,10 @@ class PaymentController extends Controller {
         $method = $input['method'];
         $items = $input['items'];
         $layout = isset($input['layout']) ? $input['layout'] : '';
+        $timestamp = isset($input['timestamp']) ? (int) $input['timestamp'] : time();
         // Log the transaction
         try {
-            $transactionId = logTransaction($items, $total, $method, $layout);
+            $transactionId = logTransaction($items, $total, $method, $layout, $timestamp);
             $this->json([
                 'success' => true,
                 'transaction_id' => $transactionId,
