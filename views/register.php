@@ -12,7 +12,7 @@
             }
         </style>
     <link rel="stylesheet" href="views/register.css">
-    <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.17/dist/interact.min.js"></script>
+    <script src="views/js/interact.min.js"></script>
     <script>
         const articles = <?php echo $articlesJson; ?>;
     </script>

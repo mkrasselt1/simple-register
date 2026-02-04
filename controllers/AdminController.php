@@ -309,10 +309,10 @@ class AdminController extends Controller
         $files = scandir($dir);
         foreach ($files as $file) {
             if ($file === '.' || $file === '..') continue;
-            
+
             $fullPath = $dir . '/' . $file;
             $relativePath = $zipPath . '/' . $file;
-            
+
             if (is_dir($fullPath)) {
                 $this->addFilesToZipRecursive($zip, $fullPath, $relativePath);
             } else {
