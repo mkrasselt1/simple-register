@@ -352,7 +352,7 @@ body {
     grid-template-columns: repeat(20, 50px);
     grid-template-rows: repeat(10, 50px);
     gap: 5px;
-    height: 500px;
+    height: 100%;
     position: relative;
     background-image:
         linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
@@ -389,6 +389,19 @@ body {
 
 .add-products-grid::-webkit-scrollbar-thumb:hover {
     background: rgba(78, 204, 163, 0.85);
+}
+
+@supports not (display: grid) {
+    .add-products-grid {
+        display: block;
+        height: calc(100vh - 60px - 50px - 80px);
+        max-height: none;
+    }
+
+    .add-product-btn {
+        display: block;
+        width: 100%;
+    }
 }
 
 .add-product-btn {
