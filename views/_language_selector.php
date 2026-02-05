@@ -25,14 +25,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const storedLang = localStorage.getItem('language');
     if (storedLang && select.querySelector(`option[value="${storedLang}"]`)) {
         select.value = storedLang;
-        // If stored lang differs from current, set it
-        if (storedLang !== '<?php echo $currentLang; ?>') {
-            changeLanguage(storedLang, false); // false to not store again
-        }
+        // Always set from localStorage; reload only if it actually changes
+        changeLanguage(storedLang, false, storedLang !== '<?php echo $currentLang; ?>');
     }
 });
 
-function changeLanguage(lang, store = true) {
+function changeLanguage(lang, store = true, reload = true) {
     if (store) {
         localStorage.setItem('language', lang);
     }
@@ -48,7 +46,9 @@ function changeLanguage(lang, store = true) {
     .then(data => {
         if (data.success) {
             // Reload page to apply new language
-            window.location.reload();
+            if (reload) {
+                window.location.reload();
+            }
         }
     })
     .catch(error => console.error('Error:', error));

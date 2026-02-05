@@ -117,7 +117,6 @@
     </style>
 </head>
 <body>
-    <?php include '_language_selector.php'; ?>
     <div class="header">
         <h1>⚙️ <?php echo $__('admin'); ?></h1>
         <div class="header-links">
@@ -153,7 +152,7 @@
                         <input type="color" id="color" name="color" value="#007bff">
                     </div>
                 </div>
-                <button type="submit" class="btn-success">➕ Add Article</button>
+                <button type="submit" class="btn-success">➕ <?php echo $__('add_article'); ?></button>
             </form>
         </div>
         
@@ -168,8 +167,8 @@
                 <thead>
                     <tr>
                         <th><?php echo $__('name'); ?></th>
-                        <th>Price</th>
-                        <th>Color</th>
+                        <th><?php echo $__('price'); ?></th>
+                        <th><?php echo $__('color'); ?></th>
                         <th><?php echo $lang->get('actions'); ?></th>
                     </tr>
                 </thead>
