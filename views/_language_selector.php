@@ -25,32 +25,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const storedLang = localStorage.getItem('language');
     if (storedLang && select.querySelector(`option[value="${storedLang}"]`)) {
         select.value = storedLang;
-        // Always set from localStorage; reload only if it actually changes
-        changeLanguage(storedLang, false, storedLang !== '<?php echo $currentLang; ?>');
+        if (storedLang !== '<?php echo $currentLang; ?>') {
+            changeLanguage(storedLang, false);
+        }
     }
 });
 
-function changeLanguage(lang, store = true, reload = true) {
+function changeLanguage(lang, store = true) {
     if (store) {
         localStorage.setItem('language', lang);
     }
-    // Send AJAX to set session
-    fetch('api/language.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'language=' + encodeURIComponent(lang)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Reload page to apply new language
-            if (reload) {
-                window.location.reload();
-            }
-        }
-    })
-    .catch(error => console.error('Error:', error));
+    try {
+        const params = new URLSearchParams(window.location.search || '');
+        params.set('lang', lang);
+        const newUrl = window.location.pathname + '?' + params.toString() + window.location.hash;
+        window.location.href = newUrl;
+    } catch (error) {
+        window.location.href = window.location.pathname + '?lang=' + encodeURIComponent(lang);
+    }
 }
 </script>
