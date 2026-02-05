@@ -364,8 +364,31 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 10px;
-    max-height: 200px;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    padding-right: 6px;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(78, 204, 163, 0.6) rgba(255, 255, 255, 0.06);
+}
+
+.add-products-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.add-products-grid::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+}
+
+.add-products-grid::-webkit-scrollbar-thumb {
+    background: rgba(78, 204, 163, 0.6);
+    border-radius: 8px;
+}
+
+.add-products-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(78, 204, 163, 0.85);
 }
 
 .add-product-btn {

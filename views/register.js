@@ -774,7 +774,6 @@ window.addEventListener('DOMContentLoaded', function() {
       } else {
         layoutSelect.value = '';
       }
-      setLayoutNameInputVisibility();
     }
   }
 
