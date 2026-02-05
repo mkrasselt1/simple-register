@@ -13,12 +13,12 @@ class AuthController extends Controller {
                 $this->render('login', ['error' => 'Invalid request']);
                 return;
             }
-            $username = $this->post('username');
+            $username = strtolower(trim($this->post('username')));
             $password = $this->post('password');
 
             $users = $this->getUsers();
             foreach ($users as $user) {
-                if ($user['username'] === $username && $user['password'] === $password) {
+                if (strtolower(trim($user['username'])) === $username && $user['password'] === $password) {
                     $_SESSION['user'] = [
                         'username' => $user['username'],
                         'permissions' => $user['permissions']

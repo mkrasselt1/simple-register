@@ -35,6 +35,10 @@ define('DEMO_MODE', false);
 // Multi-user demo mode - disabled for production
 define('MULTI_USER_DEMO', false);
 
+// Price limits for articles (inclusive)
+define('PRICE_MIN', -50.00);
+define('PRICE_MAX', 9999.99);
+
 // Transactions file
 define('TRANSACTIONS_FILE', DATA_DIR . '/transactions.json');
 

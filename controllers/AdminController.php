@@ -85,7 +85,7 @@ class AdminController extends Controller
         $price = floatval($this->post('price', 0));
         $color = $this->post('color', '#007bff');
 
-        if ($name && $price > - 5) {
+        if ($name && $this->isPriceInRange($price)) {
             addArticle($name, $price, $color);
             $this->message = 'Article added successfully!';
             $this->messageType = 'success';
@@ -102,7 +102,7 @@ class AdminController extends Controller
         $price = floatval($this->post('price', 0));
         $color = $this->post('color', '#007bff');
 
-        if ($id && $name && $price > 0) {
+        if ($id && $name && $this->isPriceInRange($price)) {
             if (updateArticle($id, $name, $price, $color)) {
                 $this->message = 'Article updated successfully!';
                 $this->messageType = 'success';
@@ -132,10 +132,11 @@ class AdminController extends Controller
     private function addUser()
     {
         $username = trim($this->post('username', ''));
+        $normalizedUsername = strtolower($username);
         $password = $this->post('password', '');
         $confirmPassword = $this->post('confirm_password', '');
 
-        if ($username && $password) {
+        if ($normalizedUsername && $password) {
             if ($password !== $confirmPassword) {
                 $this->message = 'Passwords do not match.';
                 $this->messageType = 'error';
@@ -144,14 +145,14 @@ class AdminController extends Controller
             $users = $this->getUsers();
             // Check if user exists
             foreach ($users as $user) {
-                if ($user['username'] === $username) {
+                if (strtolower(trim($user['username'])) === $normalizedUsername) {
                     $this->message = 'User already exists.';
                     $this->messageType = 'error';
                     return;
                 }
             }
             $users[] = [
-                'username' => $username,
+                'username' => $normalizedUsername,
                 'password' => $password,
                 'permissions' => ['user'] // default
             ];
@@ -172,6 +173,11 @@ class AdminController extends Controller
         }
         $data = json_decode(file_get_contents($usersFile), true);
         return $data ?: [];
+    }
+
+    private function isPriceInRange($price)
+    {
+        return $price >= PRICE_MIN && $price <= PRICE_MAX;
     }
 
     private function downloadBackup()

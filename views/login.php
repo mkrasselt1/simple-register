@@ -68,7 +68,7 @@
         <?php if (isset($data['error'])): ?>
             <p style="color: red;"><?php echo View::escape($data['error']); ?></p>
         <?php endif; ?>
-        <form method="post" action="login.php">
+        <form method="post" action="login.php" id="loginForm">
             <input type="hidden" name="csrf_token" value="<?php echo View::escape($data['csrf_token'] ?? ''); ?>">
             <label for="username"><?php echo $__('username'); ?>:</label>
             <input type="text" id="username" name="username" required>
@@ -77,5 +77,49 @@
             <button type="submit"><?php echo $__('login_button'); ?></button>
         </form>
     </div>
+    <script>
+        const LOGIN_STORAGE_KEY = 'simple_register_last_login';
+
+        function loadLastLogin() {
+            try {
+                const raw = localStorage.getItem(LOGIN_STORAGE_KEY);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data.username) {
+                    document.getElementById('username').value = data.username;
+                }
+                if (data.password) {
+                    document.getElementById('password').value = data.password;
+                }
+            } catch (error) {
+                console.warn('Failed to load last login', error);
+            }
+        }
+
+        function shouldStoreLogin(username, password) {
+            const normalizedUser = (username || '').trim().toLowerCase();
+            const normalizedPass = (password || '').trim();
+            return !(normalizedUser === 'admin' && normalizedPass === 'admin');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadLastLogin);
+
+        document.getElementById('loginForm').addEventListener('submit', function () {
+            const username = document.getElementById('username').value || '';
+            const password = document.getElementById('password').value || '';
+
+            if (shouldStoreLogin(username, password)) {
+                localStorage.setItem(
+                    LOGIN_STORAGE_KEY,
+                    JSON.stringify({
+                        username: username.trim(),
+                        password: password
+                    })
+                );
+            } else {
+                localStorage.removeItem(LOGIN_STORAGE_KEY);
+            }
+        });
+    </script>
 </body>
 </html>

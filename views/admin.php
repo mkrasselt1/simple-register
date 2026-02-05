@@ -146,7 +146,7 @@
                     </div>
                     <div class="form-group">
                         <label for="price"><?php echo $__('price'); ?> (€)</label>
-                        <input type="number" id="price" name="price" step="0.01" min="-5.00" required placeholder="2.50">
+                        <input type="number" id="price" name="price" step="0.01" min="<?php echo View::escape(PRICE_MIN); ?>" max="<?php echo View::escape(PRICE_MAX); ?>" required placeholder="2.50">
                     </div>
                     <div class="form-group">
                         <label for="color"><?php echo $lang->get('button_color'); ?></label>
@@ -183,7 +183,7 @@
                                 <input type="text" name="name" value="<?php echo View::escape($article->name); ?>" required>
                             </td>
                             <td>
-                                <input type="number" name="price" value="<?php echo View::escape($article->price); ?>" step="0.01" min="0.01" required style="width: 100px;"> €
+                                <input type="number" name="price" value="<?php echo View::escape($article->price); ?>" step="0.01" min="<?php echo View::escape(PRICE_MIN); ?>" max="<?php echo View::escape(PRICE_MAX); ?>" required style="width: 100px;"> €
                             </td>
                             <td>
                                 <input type="color" name="color" value="<?php echo View::escape($article->color ?? '#007bff'); ?>">
