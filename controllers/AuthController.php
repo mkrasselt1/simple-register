@@ -10,7 +10,7 @@ class AuthController extends Controller {
     public function login() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$this->validateCsrf()) {
-                $this->render('login', ['error' => 'Invalid request']);
+                $this->render('login', ['error' => $this->t('invalid_request', 'Invalid request')]);
                 return;
             }
             $username = strtolower(trim($this->post('username')));
@@ -28,7 +28,7 @@ class AuthController extends Controller {
                     $this->redirect('register.php');
                 }
             }
-            $this->render('login', ['error' => 'Invalid credentials']);
+            $this->render('login', ['error' => $this->t('login_error', 'Invalid credentials')]);
         } else {
             $this->render('login');
         }

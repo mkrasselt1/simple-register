@@ -344,8 +344,49 @@ body {
     opacity: 1;
 }
 
+.products-grid.edit-mode .product-btn,
+.products-grid.edit-mode .product-btn:hover,
+.products-grid.edit-mode .product-btn:active {
+    transform: none;
+    transition: box-shadow 0.1s;
+    touch-action: none;
+}
+
+/* Selected / moved tile: frame in the inverted tile color */
+.product-btn.selected,
+.product-btn.dragging,
+.product-btn.resizing {
+    box-shadow:
+        inset 0 0 0 3px var(--tile-invert, #fff),
+        0 0 0 2px var(--tile-invert, #fff),
+        0 0 14px var(--tile-invert, #fff);
+    z-index: 50;
+}
+
 .edit-mode .product-btn.dragging {
-    opacity: 0.5;
+    opacity: 0.75;
+}
+
+.product-btn.resizing.invalid {
+    opacity: 0.6;
+    box-shadow:
+        inset 0 0 0 3px #e94560,
+        0 0 0 2px #e94560;
+}
+
+/* Target cells while dragging */
+.drop-preview {
+    position: absolute;
+    border: 2px dashed #4ecca3;
+    border-radius: 10px;
+    background: rgba(78, 204, 163, 0.15);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.drop-preview.invalid {
+    border-color: #e94560;
+    background: rgba(233, 69, 96, 0.15);
 }
 
 .products-grid.edit-mode {

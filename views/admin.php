@@ -101,6 +101,82 @@
             display: flex;
             gap: 10px;
         }
+        .bulk-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .bulk-toolbar button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .bulk-spacer {
+            flex: 1;
+        }
+        .bulk-status {
+            color: #ffc107;
+            font-weight: 500;
+        }
+        .bulk-selection {
+            display: none;
+            padding: 10px;
+            background: #0f3460;
+            border-radius: 5px;
+        }
+        .bulk-selection.active {
+            display: flex;
+        }
+        .bulk-selection .bulk-status {
+            color: white;
+        }
+        #bulk-color {
+            width: 50px;
+            height: 38px;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        #article-filter {
+            padding: 8px 10px;
+            border: 1px solid #0f3460;
+            border-radius: 5px;
+            background: #1a1a2e;
+            color: white;
+            min-width: 180px;
+        }
+        .table-wrap {
+            overflow-x: auto;
+        }
+        .articles-table input[type="text"] {
+            padding: 8px;
+            border: 1px solid #0f3460;
+            border-radius: 5px;
+            background: #1a1a2e;
+            color: white;
+            font-size: 1em;
+        }
+        .articles-table input:invalid {
+            border-color: #dc3545;
+        }
+        .col-select {
+            width: 36px;
+        }
+        .col-select input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .nowrap {
+            white-space: nowrap;
+        }
+        .article-row.dirty td {
+            background: rgba(255, 193, 7, 0.12);
+        }
+        .article-row.selected td {
+            background: rgba(78, 204, 163, 0.15);
+        }
         .no-articles {
             text-align: center;
             padding: 40px;
@@ -141,7 +217,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="name"><?php echo $__('article_name'); ?></label>
-                        <input type="text" id="name" name="name" required placeholder="e.g., Coffee">
+                        <input type="text" id="name" name="name" required placeholder="<?php echo View::escape($__('article_name_placeholder')); ?>">
                     </div>
                     <div class="form-group">
                         <label for="price"><?php echo $__('price'); ?> (€)</label>
@@ -163,39 +239,151 @@
                 <p><?php echo $__('no_articles_yet'); ?></p>
             </div>
             <?php else: ?>
-            <table class="articles-table">
-                <thead>
-                    <tr>
-                        <th><?php echo $__('name'); ?></th>
-                        <th><?php echo $__('price'); ?></th>
-                        <th><?php echo $__('color'); ?></th>
-                        <th><?php echo $lang->get('actions'); ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($articles as $article): ?>
-                    <form method="POST">
-                        <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
+            <form method="POST" id="bulk-form">
+                <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
+                <div class="bulk-toolbar">
+                    <button type="submit" name="action" value="bulk_update" class="btn-primary" id="bulk-save">💾 <?php echo $__('save_all_changes'); ?></button>
+                    <span class="bulk-status" id="dirty-status"></span>
+                    <span class="bulk-spacer"></span>
+                    <input type="search" id="article-filter" placeholder="<?php echo View::escape($__('filter_articles')); ?>" aria-label="<?php echo View::escape($__('filter_articles')); ?>">
+                </div>
+                <div class="bulk-toolbar bulk-selection" id="bulk-selection">
+                    <span class="bulk-status" id="selected-status"></span>
+                    <input type="color" id="bulk-color" value="#007bff" aria-label="<?php echo View::escape($__('color')); ?>">
+                    <button type="button" class="btn-success" id="bulk-apply-color">🎨 <?php echo $__('apply_color_to_selected'); ?></button>
+                    <button type="submit" name="action" value="bulk_delete" class="btn-danger" id="bulk-delete" formnovalidate>🗑️ <?php echo $__('delete_selected'); ?></button>
+                </div>
+                <div class="table-wrap">
+                <table class="articles-table">
+                    <thead>
                         <tr>
-                            <input type="hidden" name="id" value="<?php echo View::escape($article->id); ?>">
-                            <td>
-                                <input type="text" name="name" value="<?php echo View::escape($article->name); ?>" required>
+                            <th class="col-select"><input type="checkbox" id="select-all" title="<?php echo View::escape($__('select_all')); ?>" aria-label="<?php echo View::escape($__('select_all')); ?>"></th>
+                            <th><?php echo $__('name'); ?></th>
+                            <th><?php echo $__('price'); ?></th>
+                            <th><?php echo $__('color'); ?></th>
+                            <th><?php echo $__('actions'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($articles as $article): $aid = View::escape($article->id); ?>
+                        <tr class="article-row" data-id="<?php echo $aid; ?>">
+                            <td class="col-select">
+                                <input type="checkbox" class="row-select" name="selected[]" value="<?php echo $aid; ?>">
                             </td>
                             <td>
-                                <input type="text" name="price" value="<?php echo View::escape($article->price); ?>" inputmode="decimal" pattern="-?\d+(\.\d{1,2})?" required style="width: 100px;"> €
+                                <input type="text" name="articles[<?php echo $aid; ?>][name]" value="<?php echo View::escape($article->name); ?>" required>
+                            </td>
+                            <td class="nowrap">
+                                <input type="text" name="articles[<?php echo $aid; ?>][price]" value="<?php echo View::escape($article->price); ?>" inputmode="decimal" pattern="-?\d+([.,]\d{1,2})?" required style="width: 100px;"> €
                             </td>
                             <td>
-                                <input type="color" name="color" value="<?php echo View::escape($article->color ?? '#007bff'); ?>">
+                                <input type="color" name="articles[<?php echo $aid; ?>][color]" value="<?php echo View::escape($article->color ?? '#007bff'); ?>">
                             </td>
                             <td class="actions">
-                                <button type="submit" name="action" value="update" class="btn-primary">💾 <?php echo $lang->get('save'); ?></button>
-                                <button type="submit" name="action" value="delete" class="btn-danger" onclick="return confirm('<?php echo $lang->get('are_you_sure'); ?>')">🗑️ <?php echo $lang->get('delete'); ?></button>
+                                <button type="submit" name="delete_id" value="<?php echo $aid; ?>" class="btn-danger" formnovalidate onclick="return confirm(<?php echo View::escape(json_encode($__('are_you_sure'))); ?>)">🗑️ <?php echo $__('delete'); ?></button>
                             </td>
                         </tr>
-                    </form>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                </div>
+            </form>
+            <script>
+            (function () {
+                var i18n = <?php echo json_encode([
+                    'selected' => $__('selected_count'),
+                    'unsaved' => $__('unsaved_changes'),
+                    'confirmDelete' => $__('confirm_delete_selected'),
+                ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+                var fmt = function (s, n) { return s.replace('%d', n); };
+                var form = document.getElementById('bulk-form');
+                var rows = Array.prototype.slice.call(form.querySelectorAll('.article-row'));
+                var selectAll = document.getElementById('select-all');
+                var submitting = false;
+
+                // Remember original values to detect changes
+                rows.forEach(function (row) {
+                    row.querySelectorAll('input[name^="articles"]').forEach(function (inp) {
+                        inp.dataset.original = inp.value;
+                    });
+                });
+
+                function isDirty(row) {
+                    return Array.prototype.some.call(row.querySelectorAll('input[name^="articles"]'), function (inp) {
+                        return inp.value !== inp.dataset.original;
+                    });
+                }
+
+                function visibleRows() {
+                    return rows.filter(function (r) { return !r.hidden; });
+                }
+
+                function refresh() {
+                    var dirty = 0, selected = 0;
+                    rows.forEach(function (row) {
+                        var d = isDirty(row);
+                        row.classList.toggle('dirty', d);
+                        if (d) dirty++;
+                        var sel = row.querySelector('.row-select').checked;
+                        row.classList.toggle('selected', sel);
+                        if (sel) selected++;
+                    });
+                    document.getElementById('dirty-status').textContent = dirty ? fmt(i18n.unsaved, dirty) : '';
+                    document.getElementById('bulk-save').disabled = dirty === 0;
+                    document.getElementById('selected-status').textContent = fmt(i18n.selected, selected);
+                    document.getElementById('bulk-selection').classList.toggle('active', selected > 0);
+                    var vis = visibleRows();
+                    var visSel = vis.filter(function (r) { return r.querySelector('.row-select').checked; }).length;
+                    selectAll.checked = vis.length > 0 && visSel === vis.length;
+                    selectAll.indeterminate = visSel > 0 && visSel < vis.length;
+                    return { dirty: dirty, selected: selected };
+                }
+
+                form.addEventListener('input', refresh);
+                form.addEventListener('change', refresh);
+
+                selectAll.addEventListener('change', function () {
+                    visibleRows().forEach(function (r) { r.querySelector('.row-select').checked = selectAll.checked; });
+                    refresh();
+                });
+
+                document.getElementById('bulk-apply-color').addEventListener('click', function () {
+                    var color = document.getElementById('bulk-color').value;
+                    rows.forEach(function (r) {
+                        if (r.querySelector('.row-select').checked) {
+                            r.querySelector('input[type="color"][name^="articles"]').value = color;
+                        }
+                    });
+                    refresh();
+                });
+
+                document.getElementById('article-filter').addEventListener('input', function () {
+                    var q = this.value.trim().toLowerCase();
+                    rows.forEach(function (r) {
+                        var name = r.querySelector('input[name$="[name]"]').value.toLowerCase();
+                        r.hidden = q !== '' && name.indexOf(q) === -1;
+                    });
+                    refresh();
+                });
+
+                document.getElementById('bulk-delete').addEventListener('click', function (e) {
+                    var n = refresh().selected;
+                    if (n === 0 || !confirm(fmt(i18n.confirmDelete, n))) {
+                        e.preventDefault();
+                    }
+                });
+
+                form.addEventListener('submit', function () { submitting = true; });
+                window.addEventListener('beforeunload', function (e) {
+                    if (!submitting && refresh().dirty > 0) {
+                        e.preventDefault();
+                        e.returnValue = '';
+                    }
+                });
+
+                refresh();
+            })();
+            </script>
             <?php endif; ?>
         </div>
         

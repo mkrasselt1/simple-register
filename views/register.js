@@ -20,18 +20,9 @@ function loadLayout() {
   const savedOrder = localStorage.getItem("register_visible_products");
   let visibleIds = savedOrder ? JSON.parse(savedOrder) : [];
 
-  // Remove products positioned outside the grid
-  const gridWidth = 1095; // 20 * 50 + 19 * 5
-  const gridHeight = 545; // 10 * 50 + 9 * 5
-  visibleIds = visibleIds.filter((id) => {
-    const pos = buttonPositions[id];
-    if (!pos) return true; // keep if no position
-    return (
-      pos.x >= 0 &&
-      pos.y >= 0 &&
-      pos.x + pos.width <= gridWidth &&
-      pos.y + pos.height <= gridHeight
-    );
+  // Snap all stored positions to whole cells (repairs older layouts)
+  visibleIds.forEach((id) => {
+    if (buttonPositions[id]) buttonPositions[id] = normalizePos(buttonPositions[id]);
   });
   localStorage.setItem("register_visible_products", JSON.stringify(visibleIds));
 
@@ -70,17 +61,13 @@ function renderProductsGrid(visibleIds = null) {
 
     // Set position and size
     btn.style.position = "absolute";
-    const pos = buttonPositions[article.id] || {
-      x: 0,
-      y: 0,
-      width: 55,
-      height: 55,
-    };
-    // Sichtbare Fläche 2px kleiner pro Seite
-    btn.style.left = (pos.x + 2) + "px";
-    btn.style.top = (pos.y + 2) + "px";
-    btn.style.width = (pos.width - 4) + "px";
-    btn.style.height = (pos.height - 4) + "px";
+    const pos = normalizePos(buttonPositions[article.id]);
+    buttonPositions[article.id] = pos;
+    applyTilePos(btn, pos);
+    btn.style.setProperty("--tile-invert", invertColor(article.color || "#007bff"));
+    if (isEditMode && article.id === selectedTileId) {
+      btn.classList.add("selected");
+    }
 
     btn.innerHTML += `
 			<span class="name">${escapeHtml(article.name)}</span>
@@ -113,7 +100,9 @@ function updateEditAvailableProducts() {
 
   if (availableArticles.length === 0) {
     editGrid.innerHTML =
-      '<p style="text-align: center; opacity: 0.6; padding: 20px;">All products are already visible</p>';
+      '<p style="text-align: center; opacity: 0.6; padding: 20px;">' +
+      escapeHtml(translations.all_products_visible) +
+      "</p>";
     return;
   }
 
@@ -142,7 +131,7 @@ function toggleEditMode() {
   const grid = document.getElementById("productsGrid");
 
   if (isEditMode) {
-    btn.textContent = "✓ Done Editing";
+    btn.textContent = "✓ " + translations.done_editing;
     btn.classList.add("active");
     body.classList.add("edit-mode");
     billPanel.classList.add("edit-mode");
@@ -150,7 +139,8 @@ function toggleEditMode() {
     grid.classList.add("edit-mode");
     updateEditAvailableProducts();
   } else {
-    btn.textContent = "✏️ Edit Layout";
+    btn.textContent = "✏️ " + translations.edit_layout;
+    selectedTileId = null;
     btn.classList.remove("active");
     body.classList.remove("edit-mode");
     billPanel.classList.remove("edit-mode");
@@ -160,6 +150,118 @@ function toggleEditMode() {
 
   renderProductsGrid();
   setupInteractions();
+}
+
+// Grid geometry: tiles always cover whole cells and keep a constant gap
+const GRID_CELL = 55; // px per cell (50px tile + 5px gap)
+const GRID_GAP = 5; // px between two tiles
+const GRID_COLS = 20;
+const GRID_ROWS = 10;
+const TILE_INSET = Math.ceil(GRID_GAP / 2); // offset of a tile inside its cell
+
+// Currently selected tile in edit mode
+let selectedTileId = null;
+
+// Round any stored position to whole cells (also repairs older layouts)
+function normalizePos(pos) {
+  const cols = Math.max(1, Math.round((Number(pos && pos.width) || GRID_CELL) / GRID_CELL));
+  const rows = Math.max(1, Math.round((Number(pos && pos.height) || GRID_CELL) / GRID_CELL));
+  const w = Math.min(cols, GRID_COLS);
+  const h = Math.min(rows, GRID_ROWS);
+  const cx = Math.min(Math.max(0, Math.round((Number(pos && pos.x) || 0) / GRID_CELL)), GRID_COLS - w);
+  const cy = Math.min(Math.max(0, Math.round((Number(pos && pos.y) || 0) / GRID_CELL)), GRID_ROWS - h);
+  return {
+    x: cx * GRID_CELL,
+    y: cy * GRID_CELL,
+    width: w * GRID_CELL,
+    height: h * GRID_CELL,
+  };
+}
+
+// Apply a (cell aligned) position to a tile element
+function applyTilePos(btn, pos) {
+  btn.style.left = pos.x + TILE_INSET + "px";
+  btn.style.top = pos.y + TILE_INSET + "px";
+  btn.style.width = pos.width - GRID_GAP + "px";
+  btn.style.height = pos.height - GRID_GAP + "px";
+}
+
+function getVisibleIds() {
+  const savedOrder = localStorage.getItem("register_visible_products");
+  return savedOrder ? JSON.parse(savedOrder) : [];
+}
+
+function saveButtonPositions() {
+  localStorage.setItem("register_button_positions", JSON.stringify(buttonPositions));
+}
+
+// Does the given cell rect fit into the grid without touching other tiles?
+function isFreeSpot(id, rect) {
+  if (
+    rect.x < 0 ||
+    rect.y < 0 ||
+    rect.x + rect.width > GRID_COLS * GRID_CELL ||
+    rect.y + rect.height > GRID_ROWS * GRID_CELL
+  ) {
+    return false;
+  }
+  return !getVisibleIds().some((otherId) => {
+    if (otherId === id || !buttonPositions[otherId]) return false;
+    const o = normalizePos(buttonPositions[otherId]);
+    return !(
+      rect.x + rect.width <= o.x ||
+      rect.x >= o.x + o.width ||
+      rect.y + rect.height <= o.y ||
+      rect.y >= o.y + o.height
+    );
+  });
+}
+
+// Inverted color (used for the selection frame)
+function invertColor(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
+  if (!m) return "#ffffff";
+  const inv = (0xffffff ^ parseInt(m[1], 16)).toString(16).padStart(6, "0");
+  return "#" + inv;
+}
+
+function selectTile(id) {
+  selectedTileId = id;
+  document.querySelectorAll("#productsGrid .product-btn").forEach((btn) => {
+    btn.classList.toggle("selected", btn.dataset.id === id);
+  });
+}
+
+// Preview of the target cells while dragging / resizing
+function showDropPreview(rect, ok) {
+  const grid = document.getElementById("productsGrid");
+  if (!grid) return;
+  let preview = grid.querySelector(".drop-preview");
+  if (!preview) {
+    preview = document.createElement("div");
+    preview.className = "drop-preview";
+    grid.appendChild(preview);
+  }
+  applyTilePos(preview, rect);
+  preview.classList.toggle("invalid", !ok);
+}
+
+function hideDropPreview() {
+  const preview = document.querySelector("#productsGrid .drop-preview");
+  if (preview) preview.remove();
+}
+
+// Snapped cell rect for a tile whose top-left corner is at viewport (left, top)
+function snappedRectAt(id, left, top) {
+  const grid = document.getElementById("productsGrid");
+  const gridRect = grid.getBoundingClientRect();
+  const pos = normalizePos(buttonPositions[id]);
+  return {
+    x: Math.round((left - gridRect.left - TILE_INSET) / GRID_CELL) * GRID_CELL,
+    y: Math.round((top - gridRect.top - TILE_INSET) / GRID_CELL) * GRID_CELL,
+    width: pos.width,
+    height: pos.height,
+  };
 }
 
 // Setup interactions for edit mode
@@ -185,18 +287,14 @@ function setupInteractions() {
           target.style.zIndex = 10000;
           target.style.position = 'fixed';
           target.style.pointerEvents = 'none';
-          // Offset wie bei .product-btn berechnen
           const rect = target.getBoundingClientRect();
           target._dragOffsetX = event.client.x - rect.left;
           target._dragOffsetY = event.client.y - rect.top;
         },
         move(event) {
           const target = event.target;
-          // Button direkt unter die Maus setzen
-          const x = event.client.x - target._dragOffsetX;
-          const y = event.client.y - target._dragOffsetY;
-          target.style.left = x + 'px';
-          target.style.top = y + 'px';
+          target.style.left = event.client.x - target._dragOffsetX + 'px';
+          target.style.top = event.client.y - target._dragOffsetY + 'px';
         },
         end(event) {
           const target = event.target;
@@ -216,7 +314,8 @@ function setupInteractions() {
 
     // Native dragover-Handler, damit Drop akzeptiert wird
     const grid = document.getElementById("productsGrid");
-    if (grid) {
+    if (grid && !grid._dragoverBound) {
+      grid._dragoverBound = true;
       grid.addEventListener(
         "dragover",
         function (event) {
@@ -227,124 +326,57 @@ function setupInteractions() {
     }
 
     interact(".product-btn")
+      .on("down", function (event) {
+        const btn = event.currentTarget;
+        if (btn && btn.dataset && btn.dataset.id) selectTile(btn.dataset.id);
+      })
       .draggable({
         listeners: {
-              start(event) {
-                if (event.target.closest(".remove-btn")) return;
-                event.target.classList.add("dragging");
-                droppedInZone = false;
-                // Button über alles legen
-                const target = event.target;
-                target._origZ = target.style.zIndex;
-                target._origPos = target.style.position;
-                target._origPointer = target.style.pointerEvents;
-                target.style.zIndex = 10000;
-                target.style.position = "fixed";
-                target.style.pointerEvents = "none";
-                // Offset jetzt berechnen (nach fixed!)
-                const grid = document.getElementById("productsGrid");
-                const gridRect = grid.getBoundingClientRect();
-                const rect = target.getBoundingClientRect();
-                target._dragOffsetX = event.client.x - rect.left - gridRect.left;
-                target._dragOffsetY = event.client.y - rect.top - gridRect.top;
-                let dot = document.createElement('div');
-                dot.className = 'drag-offset-dot';
-                dot.style.position = 'absolute';
-                dot.style.left = target._dragOffsetX - 5 + 'px';
-                dot.style.top = target._dragOffsetY - 5 + 'px';
-                dot.style.width = '10px';
-                dot.style.height = '10px';
-                dot.style.background = 'red';
-                dot.style.borderRadius = '50%';
-                dot.style.pointerEvents = 'none';
-                dot.style.zIndex = 20000;
-                dot.setAttribute('data-dot', '1');
-                target.appendChild(dot);
+          start(event) {
+            const target = event.target;
+            selectTile(target.dataset.id);
+            target.classList.add("dragging");
+            droppedInZone = false;
+            const rect = target.getBoundingClientRect();
+            target._dragOffsetX = event.client.x - rect.left;
+            target._dragOffsetY = event.client.y - rect.top;
+            // Über alles legen, damit es auch auf die Ablagefläche gezogen werden kann
+            target.style.zIndex = 10000;
+            target.style.position = "fixed";
+            target.style.pointerEvents = "none";
+            target.style.left = rect.left + "px";
+            target.style.top = rect.top + "px";
           },
           move(event) {
-            const grid = document.getElementById("productsGrid");
-            const gridRect = grid.getBoundingClientRect();
             const target = event.target;
-            let x = event.client.x + event.dx - target._dragOffsetX;
-            let y = event.client.y + event.dy - target._dragOffsetY;
-            target.style.left = x + "px";
-            target.style.top = y + "px";
+            const left = event.client.x - target._dragOffsetX;
+            const top = event.client.y - target._dragOffsetY;
+            target.style.left = left + "px";
+            target.style.top = top + "px";
+            const rect = snappedRectAt(target.dataset.id, left, top);
+            showDropPreview(rect, isFreeSpot(target.dataset.id, rect));
           },
           end(event) {
-              const target = event.target;
-              // Punkt entfernen
-              const dot = target.querySelector('.drag-offset-dot');
-              if (dot) dot.remove();
-              target.classList.remove("dragging");
-              if (droppedInZone) {
-                target.style.left = "";
-                target.style.top = "";
-                const id = event.target.dataset.id;
-                removeProduct(id);
-              } else {
-                // Neue Position relativ zum Grid berechnen und speichern (Offset beachten)
-                const grid = document.getElementById("productsGrid");
-                const gridRect = grid.getBoundingClientRect();
-                const mouseX = event.client.x;
-                const mouseY = event.client.y;
-                // Offset aus Drag-Start verwenden
-                const offsetX = target._dragOffsetX || 0;
-                const offsetY = target._dragOffsetY || 0;
-                let x = mouseX - gridRect.left - offsetX;
-                let y = mouseY - gridRect.top - offsetY;
-                // Snap auf 55er Grid
-                x = Math.round(x / 55) * 55;
-                y = Math.round(y / 55) * 55;
-                // Kollisionsprüfung
-                const newRect = {
-                  left: x,
-                  top: y,
-                  right: x + target.offsetWidth,
-                  bottom: y + target.offsetHeight,
-                };
-                const buttons = Array.from(grid.querySelectorAll(".product-btn")).filter((btn) => btn !== target);
-                const hasOverlap = buttons.some((btn) => {
-                  const btnRect = {
-                    left: parseFloat(btn.style.left),
-                    top: parseFloat(btn.style.top),
-                    right: parseFloat(btn.style.left) + btn.offsetWidth,
-                    bottom: parseFloat(btn.style.top) + btn.offsetHeight,
-                  };
-                  return !(
-                    newRect.right <= btnRect.left ||
-                    newRect.left >= btnRect.right ||
-                    newRect.bottom <= btnRect.top ||
-                    newRect.top >= btnRect.bottom
-                  );
-                });
-                const id = target.dataset.id;
-                if (hasOverlap) {
-                  // Reset auf alte Position und UI neu rendern
-                  const pos = buttonPositions[id];
-                  target.style.left = pos.x + "px";
-                  target.style.top = pos.y + "px";
-                  target.style.width = pos.width + "px";
-                  target.style.height = pos.height + "px";
-                  target.style.transform = "";
-                  target.setAttribute("data-x", 0);
-                  target.setAttribute("data-y", 0);
-                  renderProductsGrid();
-                  setupInteractions();
-                  return;
-                }
-                buttonPositions[id] = buttonPositions[id] || {};
-                buttonPositions[id].x = x;
-                buttonPositions[id].y = y;
-                buttonPositions[id].width = target.offsetWidth;
-                buttonPositions[id].height = target.offsetHeight;
-                localStorage.setItem(
-                  "register_button_positions",
-                  JSON.stringify(buttonPositions),
-                );
-                renderProductsGrid();
-                setupInteractions();
-              }
-            },
+            const target = event.target;
+            const id = target.dataset.id;
+            hideDropPreview();
+            target.classList.remove("dragging");
+            if (droppedInZone) {
+              removeProduct(id);
+              return;
+            }
+            const rect = snappedRectAt(
+              id,
+              event.client.x - target._dragOffsetX,
+              event.client.y - target._dragOffsetY,
+            );
+            if (isFreeSpot(id, rect)) {
+              buttonPositions[id] = rect;
+              saveButtonPositions();
+            }
+            renderProductsGrid();
+            setupInteractions();
+          },
         },
       })
       .resizable({
@@ -354,83 +386,39 @@ function setupInteractions() {
         },
         listeners: {
           start(event) {
-            if (event.target.closest(".remove-btn")) return;
-            // Save original size for collision check
-            event.target._originalWidth = event.target.offsetWidth;
-            event.target._originalHeight = event.target.offsetHeight;
+            const target = event.target;
+            selectTile(target.dataset.id);
+            target.classList.add("resizing");
+            target._startPos = normalizePos(buttonPositions[target.dataset.id]);
           },
           move(event) {
             const target = event.target;
-            let x = parseFloat(target.getAttribute("data-x")) || 0;
-            let y = parseFloat(target.getAttribute("data-y")) || 0;
-            let width = event.rect.width;
-            let height = event.rect.height;
-            // Snap size to 55px grid
-            width = Math.round(width / 55) * 55;
-            height = Math.round(height / 55) * 55;
-            target.style.width = width + "px";
-            target.style.height = height + "px";
-            x += event.deltaRect.left;
-            y += event.deltaRect.top;
-            target.style.transform = "translate(" + x + "px," + y + "px)";
-            target.setAttribute("data-x", x);
-            target.setAttribute("data-y", y);
+            const start = target._startPos;
+            // Only whole cells: round the dragged size to the nearest cell count
+            const cols = Math.max(1, Math.round((event.rect.width + GRID_GAP) / GRID_CELL));
+            const rows = Math.max(1, Math.round((event.rect.height + GRID_GAP) / GRID_CELL));
+            const rect = {
+              x: start.x,
+              y: start.y,
+              width: Math.min(cols, GRID_COLS - start.x / GRID_CELL) * GRID_CELL,
+              height: Math.min(rows, GRID_ROWS - start.y / GRID_CELL) * GRID_CELL,
+            };
+            target._newRect = rect;
+            applyTilePos(target, rect);
+            const ok = isFreeSpot(target.dataset.id, rect);
+            target.classList.toggle("invalid", !ok);
           },
           end(event) {
             const target = event.target;
             const id = target.dataset.id;
-            const newWidth = target.offsetWidth;
-            const newHeight = target.offsetHeight;
-
-            // Check for collision
-            const grid = document.getElementById("productsGrid");
-            const newRect = {
-              left: target.offsetLeft,
-              top: target.offsetTop,
-              right: target.offsetLeft + newWidth,
-              bottom: target.offsetTop + newHeight,
-            };
-
-            const buttons = Array.from(
-              grid.querySelectorAll(".product-btn"),
-            ).filter((btn) => btn !== target);
-            const hasOverlap = buttons.some((btn) => {
-              const btnRect = {
-                left: btn.offsetLeft,
-                top: btn.offsetTop,
-                right: btn.offsetLeft + btn.offsetWidth,
-                bottom: btn.offsetTop + btn.offsetHeight,
-              };
-              return !(
-                newRect.right <= btnRect.left ||
-                newRect.left >= btnRect.right ||
-                newRect.bottom <= btnRect.top ||
-                newRect.top >= btnRect.bottom
-              );
-            });
-
-            if (hasOverlap) {
-              // Revert to original size
-              target.style.width = target._originalWidth + "px";
-              target.style.height = target._originalHeight + "px";
-              buttonPositions[id].width = target._originalWidth;
-              buttonPositions[id].height = target._originalHeight;
-            } else {
-              buttonPositions[id] = buttonPositions[id] || {
-                x: 0,
-                y: 0,
-              };
-              buttonPositions[id].width = newWidth;
-              buttonPositions[id].height = newHeight;
+            target.classList.remove("resizing", "invalid");
+            if (target._newRect && isFreeSpot(id, target._newRect)) {
+              buttonPositions[id] = target._newRect;
+              saveButtonPositions();
             }
-
-            localStorage.setItem(
-              "register_button_positions",
-              JSON.stringify(buttonPositions),
-            );
-            target.style.transform = "";
-            target.setAttribute("data-x", 0);
-            target.setAttribute("data-y", 0);
+            target._newRect = null;
+            renderProductsGrid();
+            setupInteractions();
           },
         },
       });
@@ -439,40 +427,25 @@ function setupInteractions() {
     interact(".products-grid").dropzone({
       ondrop: function (event) {
         const id = event.relatedTarget.getAttribute("data-id");
-        // Nur hinzufügen, wenn noch nicht sichtbar
-        const savedOrder = localStorage.getItem("register_visible_products");
-        let visibleIds = savedOrder ? JSON.parse(savedOrder) : [];
-        if (!visibleIds.includes(id)) {
-          // Position aus Drop berechnen
-          const grid = document.getElementById("productsGrid");
-          const gridRect = grid.getBoundingClientRect();
-          const dropX = event.dragEvent.client.x - gridRect.left;
-          const dropY = event.dragEvent.client.y - gridRect.top;
-          // Snap auf 55er Grid
-          const x = Math.round(dropX / 55) * 55;
-          const y = Math.round(dropY / 55) * 55;
-          visibleIds.push(id);
-          localStorage.setItem(
-            "register_visible_products",
-            JSON.stringify(visibleIds),
-          );
-          buttonPositions[id] = {
-            x: x,
-            y: y,
-            width: 55,
-            height: 55,
-          };
-          localStorage.setItem(
-            "register_button_positions",
-            JSON.stringify(buttonPositions),
-          );
-          // Debug-Ausgabe
-          console.log("Nach Drop, visibleIds:", visibleIds);
-          // UI komplett neu aufbauen
-          renderProductsGrid(visibleIds);
-          updateEditAvailableProducts();
-          setupInteractions();
-        }
+        const visibleIds = getVisibleIds();
+        if (visibleIds.includes(id)) return;
+        const grid = document.getElementById("productsGrid");
+        const gridRect = grid.getBoundingClientRect();
+        const rect = {
+          x: Math.floor((event.dragEvent.client.x - gridRect.left) / GRID_CELL) * GRID_CELL,
+          y: Math.floor((event.dragEvent.client.y - gridRect.top) / GRID_CELL) * GRID_CELL,
+          width: GRID_CELL,
+          height: GRID_CELL,
+        };
+        if (!isFreeSpot(id, rect)) return;
+        visibleIds.push(id);
+        localStorage.setItem("register_visible_products", JSON.stringify(visibleIds));
+        buttonPositions[id] = rect;
+        saveButtonPositions();
+        selectedTileId = id;
+        renderProductsGrid(visibleIds);
+        updateEditAvailableProducts();
+        setupInteractions();
       },
     });
 
@@ -483,72 +456,6 @@ function setupInteractions() {
       },
     });
   }
-}
-
-// Snap and save position after drag
-function snapAndSavePosition(target) {
-  const grid = document.getElementById("productsGrid");
-  const gridRect = grid.getBoundingClientRect();
-  const rect = target.getBoundingClientRect();
-  let x = rect.left - gridRect.left;
-  let y = rect.top - gridRect.top;
-
-  // Snap to 55px grid
-  x = Math.round(x / 55) * 55;
-  y = Math.round(y / 55) * 55;
-
-  // Check for overlap
-  const newRect = {
-    left: x,
-    top: y,
-    right: x + target.offsetWidth,
-    bottom: y + target.offsetHeight,
-  };
-
-  const buttons = Array.from(grid.querySelectorAll(".product-btn")).filter(
-    (btn) => btn !== target,
-  );
-  const hasOverlap = buttons.some((btn) => {
-    const btnRect = btn.getBoundingClientRect();
-    const gridBtnRect = {
-      left: btnRect.left - gridRect.left,
-      top: btnRect.top - gridRect.top,
-      right: btnRect.right - gridRect.left,
-      bottom: btnRect.bottom - gridRect.top,
-    };
-    return !(
-      newRect.right <= gridBtnRect.left ||
-      newRect.left >= gridBtnRect.right ||
-      newRect.bottom <= gridBtnRect.top ||
-      newRect.top >= gridBtnRect.bottom
-    );
-  });
-
-  if (hasOverlap) {
-    // Reset to original position
-    const id = target.dataset.id;
-    const pos = buttonPositions[id];
-    target.style.left = pos.x + "px";
-    target.style.top = pos.y + "px";
-    target.style.width = pos.width + "px";
-    target.style.height = pos.height + "px";
-    target.style.transform = "";
-    target.setAttribute("data-x", 0);
-    target.setAttribute("data-y", 0);
-    return;
-  }
-
-  // Save new position
-  const id = target.dataset.id;
-  buttonPositions[id] = buttonPositions[id] || {};
-  buttonPositions[id].x = x;
-  buttonPositions[id].y = y;
-  buttonPositions[id].width = target.offsetWidth;
-  buttonPositions[id].height = target.offsetHeight;
-  localStorage.setItem(
-    "register_button_positions",
-    JSON.stringify(buttonPositions),
-  );
 }
 
 // Remove product from grid
@@ -582,8 +489,8 @@ function addProduct(id) {
       buttonPositions[id] = {
         x: 0,
         y: 0,
-        width: 55,
-        height: 55,
+        width: GRID_CELL,
+        height: GRID_CELL,
       };
       localStorage.setItem(
         "register_button_positions",
@@ -645,8 +552,8 @@ function updateCartDisplay() {
   if (items.length === 0) {
     billItems.innerHTML = `
 			<div class="empty-bill">
-				<p>No items yet</p>
-				<p>Click a product to add it</p>
+				<p>${escapeHtml(translations.no_items_yet)}</p>
+				<p>${escapeHtml(translations.click_product_to_add)}</p>
 			</div>
 		`;
     totalEl.textContent = "0.00 €";
@@ -721,7 +628,9 @@ function pay(method) {
 function showSuccess(method, total) {
   const overlay = document.getElementById("successOverlay");
   const details = document.getElementById("successDetails");
-  details.textContent = `${total.toFixed(2)} € paid by ${method}`;
+  details.textContent = translations.paid_by
+    .replace("%s", total.toFixed(2))
+    .replace("%s", translations[method] || method);
   overlay.classList.add("show");
 
   setTimeout(() => {
@@ -758,7 +667,7 @@ window.addEventListener('DOMContentLoaded', function() {
       // Leeres Element "Neu" immer oben
       const emptyOpt = document.createElement('option');
       emptyOpt.value = '';
-      emptyOpt.textContent = 'Neu';
+      emptyOpt.textContent = translations.layout_new;
       layoutSelect.appendChild(emptyOpt);
       data.layouts.forEach(name => {
         const opt = document.createElement('option');
@@ -792,16 +701,16 @@ window.addEventListener('DOMContentLoaded', function() {
         setupInteractions();
       }
     } else {
-      alert('Layout konnte nicht geladen werden: ' + (data.error || 'Unbekannter Fehler'));
+      alert(translations.layout_load_failed + ': ' + (data.error || translations.unknown_error));
     }
   }
 
   async function saveLayoutToServer() {
     let name = layoutSelect.value;
     if (!name) {
-      name = window.prompt('Bitte einen Namen für das neue Layout eingeben:');
+      name = window.prompt(translations.layout_name_prompt);
       if (!name) {
-        alert('Kein Name eingegeben. Layout wurde nicht gespeichert.');
+        alert(translations.layout_no_name_entered);
         return;
       }
     }
@@ -823,9 +732,9 @@ window.addEventListener('DOMContentLoaded', function() {
       await fetchLayouts();
       layoutSelect.value = name;
       localStorage.setItem(LAYOUT_KEY, name);
-      alert('Layout gespeichert!');
+      alert(translations.layout_saved);
     } else {
-      alert('Fehler beim Speichern: ' + (data.error || 'Unbekannter Fehler'));
+      alert(translations.layout_save_failed + ': ' + (data.error || translations.unknown_error));
     }
   }
 

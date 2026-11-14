@@ -142,7 +142,7 @@
             <?php foreach ($stats['methods'] as $method => $data): ?>
                 <div class="stat-card">
                     <div class="stat-value">€<?php echo number_format($data['revenue'], 2); ?></div>
-                    <div class="stat-label"><?php echo ucfirst($method); ?> <?php echo $__('revenue'); ?></div>
+                    <div class="stat-label"><?php echo $__('revenue'); ?> <?php echo View::escape($__($method, ucfirst($method))); ?></div>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -204,7 +204,7 @@
                             <td>€<?php echo number_format($transaction->getTotal(), 2); ?></td>
                             <td>
                                 <span class="payment-method <?php echo $transaction->getPaymentMethod(); ?>">
-                                    <?php echo ucfirst($transaction->getPaymentMethod()); ?>
+                                    <?php echo View::escape($__($transaction->getPaymentMethod(), ucfirst($transaction->getPaymentMethod()))); ?>
                                 </span>
                             </td>
                             <td><?php echo View::escape($transaction->getLayout()); ?></td>
@@ -214,7 +214,7 @@
                                     <form method="post" action="reports.php" style="display: inline;">
                                         <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
                                         <input type="hidden" name="transaction_id" value="<?php echo View::escape($transaction->getId()); ?>">
-                                        <button type="submit" name="action" value="cancel_transaction" class="btn-danger" onclick="return confirm('<?php echo $__('confirm_cancel_transaction'); ?>')"><?php echo $__('cancel'); ?></button>
+                                        <button type="submit" name="action" value="cancel_transaction" class="btn-danger" onclick="return confirm(<?php echo View::escape(json_encode($__('confirm_cancel_transaction'))); ?>)"><?php echo $__('cancel'); ?></button>
                                     </form>
                                 <?php endif; ?>
                             </td>

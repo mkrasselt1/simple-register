@@ -40,12 +40,16 @@ class AdminController extends Controller
     private function handlePost()
     {
         if (!$this->validateCsrf()) {
-            $this->message = 'Invalid request';
+            $this->message = $this->t('invalid_request', 'Invalid request');
             $this->messageType = 'error';
             return;
         }
         // Valid, now handle
         $action = $this->post('action', '');
+        // Per-row delete button inside the bulk edit form
+        if ($this->post('delete_id', '') !== '') {
+            $action = 'delete';
+        }
 
         switch ($action) {
             case 'add':
@@ -60,6 +64,16 @@ class AdminController extends Controller
                 break;
             case 'delete':
                 if ($this->deleteArticle()) {
+                    $this->regenerateCsrf();
+                }
+                break;
+            case 'bulk_update':
+                if ($this->bulkUpdateArticles()) {
+                    $this->regenerateCsrf();
+                }
+                break;
+            case 'bulk_delete':
+                if ($this->bulkDeleteArticles()) {
                     $this->regenerateCsrf();
                 }
                 break;
@@ -87,10 +101,10 @@ class AdminController extends Controller
 
         if ($name && $this->isPriceInRange($price)) {
             addArticle($name, $price, $color);
-            $this->message = 'Article added successfully!';
+            $this->message = $this->t('article_added', 'Article added successfully!');
             $this->messageType = 'success';
         } else {
-            $this->message = 'Please provide a valid name and price.';
+            $this->message = $this->t('invalid_article_data', 'Please provide a valid name and price.');
             $this->messageType = 'error';
         }
     }
@@ -104,29 +118,114 @@ class AdminController extends Controller
 
         if ($id && $name && $this->isPriceInRange($price)) {
             if (updateArticle($id, $name, $price, $color)) {
-                $this->message = 'Article updated successfully!';
+                $this->message = $this->t('article_updated', 'Article updated successfully!');
                 $this->messageType = 'success';
             } else {
-                $this->message = 'Article not found.';
+                $this->message = $this->t('article_not_found', 'Article not found.');
                 $this->messageType = 'error';
             }
         } else {
-            $this->message = 'Please provide valid data.';
+            $this->message = $this->t('invalid_article_data', 'Please provide a valid name and price.');
             $this->messageType = 'error';
         }
     }
 
     private function deleteArticle()
     {
-        $id = $this->post('id', '');
+        $id = $this->post('delete_id', '') ?: $this->post('id', '');
 
         if ($id && deleteArticle($id)) {
-            $this->message = 'Article deleted successfully!';
+            $this->message = $this->t('article_deleted', 'Article deleted successfully!');
             $this->messageType = 'success';
-        } else {
-            $this->message = 'Article not found.';
-            $this->messageType = 'error';
+            return true;
         }
+        $this->message = $this->t('article_not_found', 'Article not found.');
+        $this->messageType = 'error';
+        return false;
+    }
+
+    /**
+     * Update several articles at once.
+     * Expects $_POST['articles'][<id>] = ['name' => ..., 'price' => ..., 'color' => ...]
+     */
+    private function bulkUpdateArticles()
+    {
+        $input = $this->post('articles', []);
+        if (!is_array($input) || empty($input)) {
+            $this->message = $this->t('bulk_nothing_to_save', 'No articles submitted.');
+            $this->messageType = 'error';
+            return false;
+        }
+
+        $articles = getArticles();
+        $updated = 0;
+        $invalid = [];
+
+        foreach ($input as $id => $data) {
+            if (!is_array($data) || !isset($articles[$id])) {
+                continue;
+            }
+            $name = trim((string) ($data['name'] ?? ''));
+            $priceRaw = str_replace(',', '.', trim((string) ($data['price'] ?? '')));
+            $color = (string) ($data['color'] ?? $articles[$id]->color);
+
+            if ($name === '' || !is_numeric($priceRaw) || !$this->isPriceInRange((float) $priceRaw)
+                || !preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
+                $invalid[] = $name !== '' ? $name : $articles[$id]->name;
+                continue;
+            }
+            $price = round((float) $priceRaw, 2);
+
+            $article = $articles[$id];
+            if ($article->name !== $name || (float) $article->price !== $price || $article->color !== $color) {
+                $article->name = $name;
+                $article->price = $price;
+                $article->color = $color;
+                $updated++;
+            }
+        }
+
+        if ($updated > 0) {
+            saveArticles($articles);
+        }
+
+        if ($invalid) {
+            $this->message = sprintf($this->t('bulk_updated_with_errors', '%d article(s) saved. Invalid data, not saved: %s'),
+                $updated, implode(', ', $invalid));
+            $this->messageType = 'error';
+        } else {
+            $this->message = sprintf($this->t('bulk_updated', '%d article(s) saved.'), $updated);
+            $this->messageType = 'success';
+        }
+        return $updated > 0;
+    }
+
+    /**
+     * Delete all selected articles. Expects $_POST['selected'] = [<id>, ...]
+     */
+    private function bulkDeleteArticles()
+    {
+        $ids = $this->post('selected', []);
+        if (!is_array($ids) || empty($ids)) {
+            $this->message = $this->t('bulk_none_selected', 'No articles selected.');
+            $this->messageType = 'error';
+            return false;
+        }
+
+        $articles = getArticles();
+        $deleted = 0;
+        foreach ($ids as $id) {
+            if (is_string($id) && isset($articles[$id])) {
+                unset($articles[$id]);
+                $deleted++;
+            }
+        }
+        if ($deleted > 0) {
+            saveArticles($articles);
+        }
+        $this->message = sprintf($this->t('bulk_deleted', '%d article(s) deleted.'), $deleted);
+        $this->messageType = $deleted > 0 ? 'success' : 'error';
+        return $deleted > 0;
     }
 
     private function addUser()
@@ -138,7 +237,7 @@ class AdminController extends Controller
 
         if ($normalizedUsername && $password) {
             if ($password !== $confirmPassword) {
-                $this->message = 'Passwords do not match.';
+                $this->message = $this->t('passwords_do_not_match', 'Passwords do not match.');
                 $this->messageType = 'error';
                 return;
             }
@@ -146,7 +245,7 @@ class AdminController extends Controller
             // Check if user exists
             foreach ($users as $user) {
                 if (strtolower(trim($user['username'])) === $normalizedUsername) {
-                    $this->message = 'User already exists.';
+                    $this->message = $this->t('user_exists', 'User already exists.');
                     $this->messageType = 'error';
                     return;
                 }
@@ -157,10 +256,10 @@ class AdminController extends Controller
                 'permissions' => ['user'] // default
             ];
             file_put_contents(USERS_FILE, json_encode($users, JSON_PRETTY_PRINT), LOCK_EX);
-            $this->message = 'User added successfully!';
+            $this->message = $this->t('user_added', 'User added successfully!');
             $this->messageType = 'success';
         } else {
-            $this->message = 'Please provide username and password.';
+            $this->message = $this->t('provide_username_password', 'Please provide username and password.');
             $this->messageType = 'error';
         }
     }
@@ -183,7 +282,7 @@ class AdminController extends Controller
     private function downloadBackup()
     {
         if (!class_exists('ZipArchive')) {
-            $this->message = 'ZIP extension is not available. Please contact your administrator.';
+            $this->message = $this->t('zip_not_available', 'ZIP extension is not available. Please contact your administrator.');
             $this->messageType = 'error';
             return;
         }
@@ -203,7 +302,7 @@ class AdminController extends Controller
             unlink($zipFile);
             exit;
         } else {
-            $this->message = 'Failed to create backup.';
+            $this->message = $this->t('backup_failed', 'Failed to create backup.');
             $this->messageType = 'error';
         }
     }
@@ -211,13 +310,13 @@ class AdminController extends Controller
     private function uploadRestore()
     {
         if (!isset($_FILES['backup_file']) || $_FILES['backup_file']['error'] !== UPLOAD_ERR_OK) {
-            $this->message = 'No file uploaded or upload error.';
+            $this->message = $this->t('upload_error', 'No file uploaded or upload error.');
             $this->messageType = 'error';
             return false;
         }
 
         if (!class_exists('ZipArchive')) {
-            $this->message = 'ZIP extension is not available. Please contact your administrator.';
+            $this->message = $this->t('zip_not_available', 'ZIP extension is not available. Please contact your administrator.');
             $this->messageType = 'error';
             return false;
         }
@@ -226,7 +325,7 @@ class AdminController extends Controller
         $allowedTypes = ['application/zip', 'application/x-zip-compressed'];
 
         if (!in_array($file['type'], $allowedTypes) && !preg_match('/\.zip$/i', $file['name'])) {
-            $this->message = 'Only ZIP files are allowed.';
+            $this->message = $this->t('only_zip_allowed', 'Only ZIP files are allowed.');
             $this->messageType = 'error';
             return false;
         }
@@ -258,16 +357,16 @@ class AdminController extends Controller
             $this->deleteDirectory($extractPath);
 
             if ($success) {
-                $this->message = 'Backup restored successfully!';
+                $this->message = $this->t('backup_restored', 'Backup restored successfully!');
                 $this->messageType = 'success';
                 return true;
             } else {
-                $this->message = 'Failed to restore backup.';
+                $this->message = $this->t('restore_failed', 'Failed to restore backup.');
                 $this->messageType = 'error';
                 return false;
             }
         } else {
-            $this->message = 'Invalid ZIP file.';
+            $this->message = $this->t('invalid_zip', 'Invalid ZIP file.');
             $this->messageType = 'error';
             return false;
         }

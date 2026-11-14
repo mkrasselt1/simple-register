@@ -17,11 +17,25 @@
     <script src="views/js/interact.min.js"></script>
     <script>
         const articles = <?php echo $articlesJson; ?>;
-        const translations = {
-            payment_failed: "<?php echo addslashes($__('payment_failed')); ?>",
-            unknown_error: "<?php echo addslashes($__('unknown_error')); ?>",
-            payment_failed_try_again: "<?php echo addslashes($__('payment_failed_try_again')); ?>"
-        };
+        const translations = <?php echo json_encode([
+            'payment_failed' => $__('payment_failed'),
+            'unknown_error' => $__('unknown_error'),
+            'payment_failed_try_again' => $__('payment_failed_try_again'),
+            'edit_layout' => $__('edit_layout'),
+            'done_editing' => $__('done_editing'),
+            'all_products_visible' => $__('all_products_visible'),
+            'no_items_yet' => $__('no_items_yet'),
+            'click_product_to_add' => $__('click_product_to_add'),
+            'paid_by' => $__('paid_by'),
+            'cash' => $__('cash'),
+            'card' => $__('card'),
+            'layout_new' => $__('layout_new'),
+            'layout_load_failed' => $__('layout_load_failed'),
+            'layout_name_prompt' => $__('layout_name_prompt'),
+            'layout_no_name_entered' => $__('layout_no_name_entered'),
+            'layout_saved' => $__('layout_saved'),
+            'layout_save_failed' => $__('layout_save_failed'),
+        ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
     </script>
     <script src="views/register.js"></script>
     <?php require_once __DIR__ . '/_color_utils.php'; ?>
@@ -46,7 +60,7 @@
                         <span style="margin-left:16px; display:inline-flex; align-items:center; gap:6px;">
                             <select id="layoutSelect"></select>
                             <?php if (isset($_SESSION['user']) && in_array('admin', $_SESSION['user']['permissions'])): ?>
-                            <button id="saveLayoutBtn" style="padding:2px 8px;">💾</button>
+                            <button id="saveLayoutBtn" style="padding:2px 8px;" title="<?php echo View::escape($__('save_layout')); ?>">💾</button>
                             <?php endif; ?>
                         </span>
         </div>

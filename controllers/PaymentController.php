@@ -15,22 +15,22 @@ class PaymentController extends Controller {
         
         // Only accept POST requests
         if (!$this->isPost()) {
-            $this->json(['success' => false, 'error' => 'Method not allowed'], 405);
+            $this->json(['success' => false, 'error' => $this->t('method_not_allowed', 'Method not allowed')], 405);
         }
         
         $input = $this->getJsonInput();
         
         if ($input === null) {
-            $this->json(['success' => false, 'error' => 'Invalid JSON input'], 400);
+            $this->json(['success' => false, 'error' => $this->t('invalid_json', 'Invalid JSON input')], 400);
         }
         
         // Validate required fields
         if (!isset($input['items']) || !is_array($input['items']) || empty($input['items'])) {
-            $this->json(['success' => false, 'error' => 'No items in cart'], 400);
+            $this->json(['success' => false, 'error' => $this->t('no_items_in_cart', 'No items in cart')], 400);
         }
         
         if (!isset($input['method']) || !in_array($input['method'], ['cash', 'card'])) {
-            $this->json(['success' => false, 'error' => 'Invalid payment method'], 400);
+            $this->json(['success' => false, 'error' => $this->t('invalid_payment_method', 'Invalid payment method')], 400);
         }
         
         $total = isset($input['total']) ? (float) $input['total'] : 0;
@@ -44,10 +44,10 @@ class PaymentController extends Controller {
             $this->json([
                 'success' => true,
                 'transaction_id' => $transactionId,
-                'message' => 'Payment processed successfully'
+                'message' => $this->t('payment_processed', 'Payment processed successfully')
             ]);
         } catch (Exception $e) {
-            $this->json(['success' => false, 'error' => 'Failed to log transaction'], 500);
+            $this->json(['success' => false, 'error' => $this->t('transaction_log_failed', 'Failed to log transaction')], 500);
         }
     }
 }

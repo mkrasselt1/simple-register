@@ -66,11 +66,11 @@ class ReportsController extends Controller {
             if ($success) {
                 // Success, regenerate token
                 $this->regenerateCsrf();
-                $_SESSION['message'] = 'Transaction cancelled successfully';
+                $_SESSION['message'] = $this->t('transaction_cancelled', 'Transaction cancelled successfully');
                 $this->redirect('reports.php?' . http_build_query($_GET));
             } else {
                 // Failure, do not regenerate, allow retry
-                $_SESSION['error'] = 'Failed to cancel transaction: ' . str_replace("\n", "<br>", $log);
+                $_SESSION['error'] = $this->t('transaction_cancel_failed', 'Failed to cancel transaction') . ': ' . str_replace("\n", "<br>", htmlspecialchars($log, ENT_QUOTES, 'UTF-8'));
                 $this->redirect('reports.php?' . http_build_query($_GET));
             }
         }

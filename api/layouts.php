@@ -2,6 +2,9 @@
 // api/layouts.php
 // API für das Speichern und Laden von Layouts
 
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../core/Language.php';
+
 $layoutsDir = __DIR__ . '/../data/layouts';
 if (!is_dir($layoutsDir)) {
     mkdir($layoutsDir, 0777, true);
@@ -23,12 +26,12 @@ switch ($action) {
         break;
     case 'load':
         if (!$name) {
-            echo json_encode(['success' => false, 'error' => 'No name']);
+            echo json_encode(['success' => false, 'error' => __('layout_no_name', 'No name')]);
             break;
         }
         $file = "$layoutsDir/$name.json";
         if (!file_exists($file)) {
-            echo json_encode(['success' => false, 'error' => 'Not found']);
+            echo json_encode(['success' => false, 'error' => __('layout_not_found', 'Not found')]);
             break;
         }
         $data = file_get_contents($file);
@@ -39,7 +42,7 @@ switch ($action) {
         $name = $input['name'] ?? '';
         $data = $input['data'] ?? null;
         if (!$name || !$data) {
-            echo json_encode(['success' => false, 'error' => 'Missing name or data']);
+            echo json_encode(['success' => false, 'error' => __('layout_missing_data', 'Missing name or data')]);
             break;
         }
         $file = "$layoutsDir/$name.json";
@@ -47,5 +50,5 @@ switch ($action) {
         echo json_encode(['success' => true]);
         break;
     default:
-        echo json_encode(['success' => false, 'error' => 'Invalid action']);
+        echo json_encode(['success' => false, 'error' => __('invalid_action', 'Invalid action')]);
 }
