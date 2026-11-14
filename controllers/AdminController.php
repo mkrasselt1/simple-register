@@ -7,6 +7,7 @@
 require_once __DIR__ . '/../core/Controller.php';
 require_once __DIR__ . '/AuthController.php';
 require_once __DIR__ . '/../articles.php';
+require_once __DIR__ . '/../sync.php';
 
 class AdminController extends Controller
 {
@@ -32,6 +33,7 @@ class AdminController extends Controller
         $this->render('admin', [
             'articles' => $articles,
             'users' => $users,
+            'sync' => syncGetSettings(),
             'message' => $this->message,
             'messageType' => $this->messageType
         ]);
@@ -79,6 +81,11 @@ class AdminController extends Controller
                 break;
             case 'add_user':
                 if ($this->addUser()) {
+                    $this->regenerateCsrf();
+                }
+                break;
+            case 'sync':
+                if ($this->runSync()) {
                     $this->regenerateCsrf();
                 }
                 break;
@@ -226,6 +233,62 @@ class AdminController extends Controller
         $this->message = sprintf($this->t('bulk_deleted', '%d article(s) deleted.'), $deleted);
         $this->messageType = $deleted > 0 ? 'success' : 'error';
         return $deleted > 0;
+    }
+
+    /**
+     * Two-way synchronisation with another instance, using the credentials
+     * of the currently logged in admin.
+     */
+    private function runSync()
+    {
+        $settings = syncGetSettings();
+        $url = syncNormalizeUrl($this->post('remote_url', ''));
+        if ($url === '') {
+            $this->message = $this->t('sync_error_url', 'Please enter a valid URL.');
+            $this->messageType = 'error';
+            return false;
+        }
+        $settings['remote_url'] = $url;
+        syncSaveSettings($settings);
+
+        $username = $_SESSION['user']['username'] ?? '';
+        $password = syncGetUserPassword($username);
+        if ($password === null) {
+            $this->message = $this->t('sync_error_auth', 'Login failed on the other instance.');
+            $this->messageType = 'error';
+            return false;
+        }
+
+        @set_time_limit(300);
+        $result = syncWithRemote($url, $username, $password);
+
+        $settings['last_sync'] = date('Y-m-d H:i:s');
+        $settings['last_result'] = $result['ok'] ? 'ok' : 'error';
+        syncSaveSettings($settings);
+
+        if (!$result['ok']) {
+            $this->message = $this->t($result['error'], 'Synchronisation failed.')
+                . (!empty($result['detail']) ? ' (' . $result['detail'] . ')' : '');
+            $this->messageType = 'error';
+            return false;
+        }
+
+        $fmt = function ($stats) {
+            return sprintf(
+                $this->t('sync_stats', '%d articles, %d layouts, %d users, %d transactions'),
+                (int) ($stats['articles'] ?? 0),
+                (int) ($stats['layouts'] ?? 0),
+                (int) ($stats['users'] ?? 0),
+                (int) ($stats['transactions'] ?? 0)
+            );
+        };
+        $this->message = sprintf(
+            $this->t('sync_success', 'Synchronisation completed. Received: %s. Sent: %s.'),
+            $fmt($result['pulled']),
+            $fmt($result['pushed'])
+        );
+        $this->messageType = 'success';
+        return true;
     }
 
     private function addUser()

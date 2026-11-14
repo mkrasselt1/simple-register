@@ -8,6 +8,7 @@ class Article {
     public $price;
     public $color;
     public $created_at;
+    public $updated_at;
     public $textColor;
 
     public function __construct($data) {
@@ -16,6 +17,7 @@ class Article {
         $this->price = $data['price'] ?? 0;
         $this->color = $data['color'] ?? '#007bff';
         $this->created_at = $data['created_at'] ?? '';
+        $this->updated_at = $data['updated_at'] ?? ($data['created_at'] ?? '');
         // textColor wird ggf. später gesetzt
         $this->textColor = $data['textColor'] ?? null;
     }
@@ -26,7 +28,8 @@ class Article {
             'name' => $this->name,
             'price' => $this->price,
             'color' => $this->color,
-            'created_at' => $this->created_at
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at
         ];
         if ($this->textColor) $arr['textColor'] = $this->textColor;
         return $arr;

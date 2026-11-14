@@ -48,6 +48,12 @@ define('ARTICLES_FILE', DATA_DIR . '/articles.json');
 // Users file
 define('USERS_FILE', DATA_DIR . '/users.json');
 
+// Deleted article IDs with deletion time (needed for synchronisation)
+define('DELETED_ARTICLES_FILE', DATA_DIR . '/deleted_articles.json');
+
+// Synchronisation settings (remote URL, last result)
+define('SYNC_FILE', DATA_DIR . '/sync.json');
+
 // Initialize articles file if it doesn't exist
 if (!file_exists(ARTICLES_FILE)) {
     // Empty articles for production

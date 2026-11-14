@@ -16,6 +16,7 @@ A simple web-based cash register system that can be hosted using PHP's built-in 
 - **Reports & Analytics** - Revenue stats, article stats, and transaction list with cancel option
 - **Transaction Logging** - Each payment stored as its own JSON file
 - **Backups** - Download/restore full data backup (ZIP)
+- **Synchronisation** - Two-way sync of articles, layouts, users and transactions with another instance (Admin → Synchronisation; enter the other instance's URL, authentication uses the logged-in admin's credentials, which must exist there too)
 - **I18n** - Language selector with English + German included
 - **Session Keep-Alive** - Prevents idle logouts on kiosk devices
 - **MVC Architecture** - Clean separation of concerns with controllers and views

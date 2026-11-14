@@ -21,12 +21,52 @@ function getArticles() {
     return $articles;
 }
 
-function saveArticles($articles) {
+/**
+ * Save all articles.
+ * With $trackChanges the change time of new/modified articles is updated and
+ * removed articles are remembered as deleted (needed for synchronisation).
+ */
+function saveArticles($articles, $trackChanges = true) {
+    $now = date('Y-m-d H:i:s');
+    $old = [];
+    if ($trackChanges && file_exists(ARTICLES_FILE)) {
+        $old = json_decode(file_get_contents(ARTICLES_FILE), true) ?: [];
+    }
     $data = [];
     foreach ($articles as $article) {
+        if ($trackChanges) {
+            $prev = $old[$article->id] ?? null;
+            if ($prev === null
+                || ($prev['name'] ?? null) !== $article->name
+                || (float) ($prev['price'] ?? 0) !== (float) $article->price
+                || ($prev['color'] ?? null) !== $article->color) {
+                $article->updated_at = $now;
+            }
+        }
         $data[$article->id] = $article->toArray();
     }
+    if ($trackChanges) {
+        $removed = array_diff(array_keys($old), array_keys($data));
+        if ($removed) {
+            $deleted = getDeletedArticles();
+            foreach ($removed as $id) {
+                $deleted[$id] = $now;
+            }
+            saveDeletedArticles($deleted);
+        }
+    }
     return file_put_contents(ARTICLES_FILE, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX);
+}
+
+function getDeletedArticles() {
+    if (!file_exists(DELETED_ARTICLES_FILE)) {
+        return [];
+    }
+    return json_decode(file_get_contents(DELETED_ARTICLES_FILE), true) ?: [];
+}
+
+function saveDeletedArticles($deleted) {
+    return file_put_contents(DELETED_ARTICLES_FILE, json_encode($deleted, JSON_PRETTY_PRINT), LOCK_EX);
 }
 
 function addArticle($name, $price, $color = '#007bff') {
@@ -37,7 +77,8 @@ function addArticle($name, $price, $color = '#007bff') {
         'name' => $name,
         'price' => (float) $price,
         'color' => $color,
-        'created_at' => date('Y-m-d H:i:s')
+        'created_at' => date('Y-m-d H:i:s'),
+        'updated_at' => date('Y-m-d H:i:s')
     ]);
     $articles[$id] = $article;
     saveArticles($articles);

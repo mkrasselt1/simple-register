@@ -436,6 +436,31 @@
         </div>
         
         <div class="card">
+            <h2>🔄 <?php echo $__('sync_title'); ?></h2>
+            <p style="color: #ccc; margin-bottom: 15px;"><?php echo $__('sync_description'); ?></p>
+            <form method="POST">
+                <input type="hidden" name="action" value="sync">
+                <input type="hidden" name="csrf_token" value="<?php echo View::escape($csrf_token ?? ''); ?>">
+                <div class="form-row">
+                    <div class="form-group" style="flex: 3;">
+                        <label for="remote_url"><?php echo $__('sync_remote_url'); ?></label>
+                        <input type="url" id="remote_url" name="remote_url" required
+                               placeholder="https://kasse2.example.com"
+                               value="<?php echo View::escape($sync['remote_url'] ?? ''); ?>">
+                    </div>
+                </div>
+                <button type="submit" class="btn-success" onclick="this.disabled=true; this.form.submit();">🔄 <?php echo $__('sync_now'); ?></button>
+                <?php if (!empty($sync['last_sync'])): ?>
+                <span style="margin-left: 15px; color: <?php echo ($sync['last_result'] ?? '') === 'ok' ? '#4ecca3' : '#e94560'; ?>;">
+                    <?php echo $__('sync_last'); ?>: <?php echo View::escape($sync['last_sync']); ?>
+                    (<?php echo ($sync['last_result'] ?? '') === 'ok' ? $__('success') : $__('error'); ?>)
+                </span>
+                <?php endif; ?>
+            </form>
+            <p style="color: #999; margin-top: 15px; font-size: 0.9em;"><?php echo $__('sync_hint'); ?></p>
+        </div>
+
+        <div class="card">
             <h2><?php echo $lang->get('backup_restore'); ?></h2>
             <div class="form-row">
                 <div class="form-group">
