@@ -36,6 +36,8 @@
             'layout_saved' => $__('layout_saved'),
             'layout_save_failed' => $__('layout_save_failed'),
             'price_each' => $__('price_each'),
+            'all_layouts_placed' => $__('all_layouts_placed'),
+            'no_other_layouts' => $__('no_other_layouts'),
         ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
     </script>
     <script src="<?php echo View::asset('views/register.js'); ?>"></script>
@@ -68,7 +70,6 @@
     </div>
 
     <div class="layout-controls">
-        <div class="layout-buttons" id="layoutButtons" role="toolbar" aria-label="<?php echo View::escape($__('layouts')); ?>"></div>
         <div>
             <?php if (isset($_SESSION['user']) && in_array('admin', $_SESSION['user']['permissions'])): ?>
             <button id="editModeBtn" onclick="toggleEditMode()">✏️ <?php echo $__('edit_layout'); ?></button>
@@ -128,7 +129,10 @@
 
         <div class="edit-panel" id="editPanel">
             <div class="bill-header">
-                <h2><?php echo $__('available_products'); ?></h2>
+                <div class="panel-toggle" role="group" aria-label="<?php echo View::escape($__('available_products')); ?>">
+                    <button type="button" class="panel-toggle-btn active" data-mode="products" aria-pressed="true" onclick="setEditPanelMode('products')">🛒 <?php echo $__('products'); ?></button>
+                    <button type="button" class="panel-toggle-btn" data-mode="layouts" aria-pressed="false" onclick="setEditPanelMode('layouts')">🗂️ <?php echo $__('layouts'); ?></button>
+                </div>
             </div>
             <div class="add-products-grid" id="editAvailableProducts">
                 <!-- Available products will be populated by JavaScript -->

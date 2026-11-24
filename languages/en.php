@@ -211,4 +211,7 @@ return [
     'layouts' => 'Layouts',
     'resize_panel_hint' => 'Drag to change the width (double click: reset)',
     'price_each' => '%s € each',
+    'products' => 'Products',
+    'all_layouts_placed' => 'All layouts are already placed',
+    'no_other_layouts' => 'No other layouts saved. Save more layouts with 💾 first.',
 ];

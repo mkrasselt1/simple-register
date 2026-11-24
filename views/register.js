@@ -39,43 +39,75 @@ function renderProductsGrid(visibleIds = null) {
     visibleIds = savedOrder ? JSON.parse(savedOrder) : [];
   }
 
-  let visibleArticles;
-  visibleArticles = articles.filter((article) =>
-    visibleIds.includes(article.id),
-  );
-  // Sort by the order in visibleIds
-  visibleArticles.sort(
-    (a, b) => visibleIds.indexOf(a.id) - visibleIds.indexOf(b.id),
-  );
-
   grid.innerHTML = "";
-  visibleArticles.forEach((article) => {
+  visibleIds.forEach((id) => {
     const btn = document.createElement("button");
     btn.className = "product-btn";
-    btn.style.backgroundColor = article.color || "#007bff";
-    btn.style.color = article.textColor || "#fff";
-    btn.dataset.id = article.id;
-    btn.dataset.name = article.name;
-    btn.dataset.price = article.price;
-    btn.onclick = isEditMode ? null : () => addToCart(btn);
+    btn.dataset.id = id;
+    let color;
 
-    // Set position and size
-    btn.style.position = "absolute";
-    const pos = normalizePos(buttonPositions[article.id]);
-    buttonPositions[article.id] = pos;
-    applyTilePos(btn, pos);
-    btn.style.setProperty("--tile-invert", invertColor(article.color || "#007bff"));
-    if (isEditMode && article.id === selectedTileId) {
-      btn.classList.add("selected");
-    }
-
-    btn.innerHTML += `
+    const layoutName = layoutNameFromTileId(id);
+    if (layoutName !== null) {
+      // Tile that switches to another layout
+      color = LAYOUT_TILE_COLOR;
+      btn.classList.add("layout-tile");
+      btn.dataset.layout = layoutName;
+      btn.onclick = isEditMode ? null : () => switchToLayout(layoutName);
+      btn.title = layoutName;
+      btn.innerHTML = `<span class="name"><span class="layout-icon">🗂️</span> ${escapeHtml(layoutName)}</span>`;
+    } else {
+      const article = articles.find((a) => a.id === id);
+      if (!article) return; // deleted article
+      color = article.color || "#007bff";
+      btn.style.backgroundColor = color;
+      btn.style.color = article.textColor || "#fff";
+      btn.dataset.name = article.name;
+      btn.dataset.price = article.price;
+      btn.onclick = isEditMode ? null : () => addToCart(btn);
+      btn.innerHTML = `
 			<span class="name">${escapeHtml(article.name)}</span>
 			<span class="price">${Number(article.price).toFixed(2)} €</span>
 		`;
+    }
+
+    // Set position and size
+    btn.style.position = "absolute";
+    const pos = normalizePos(buttonPositions[id]);
+    buttonPositions[id] = pos;
+    applyTilePos(btn, pos);
+    btn.style.setProperty("--tile-invert", invertColor(color));
+    if (isEditMode && id === selectedTileId) {
+      btn.classList.add("selected");
+    }
 
     grid.appendChild(btn);
   });
+}
+
+// --- Layout tiles: buttons on the grid that switch to another layout ---
+const LAYOUT_TILE_PREFIX = "layout:";
+const LAYOUT_TILE_COLOR = "#2c3e50";
+let availableLayouts = []; // names of saved layouts (filled from the server)
+let editPanelMode = "products"; // "products" | "layouts"
+
+function layoutNameFromTileId(id) {
+  return typeof id === "string" && id.indexOf(LAYOUT_TILE_PREFIX) === 0
+    ? id.slice(LAYOUT_TILE_PREFIX.length)
+    : null;
+}
+
+// Replaced by the layout management code below once it is ready
+let switchToLayout = function () {};
+
+function setEditPanelMode(mode) {
+  editPanelMode = mode;
+  document.querySelectorAll(".panel-toggle-btn").forEach((b) => {
+    const active = b.dataset.mode === mode;
+    b.classList.toggle("active", active);
+    b.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+  updateEditAvailableProducts();
+  setupInteractions();
 }
 
 // Update available products list
@@ -89,34 +121,41 @@ function updateEditAvailableProducts() {
   if (!editGrid) return;
 
   const savedOrder = localStorage.getItem("register_visible_products");
-  const visibleIds = savedOrder
-    ? JSON.parse(savedOrder)
-    : articles.map((a) => a.id);
-  const availableArticles = articles.filter(
-    (article) => !visibleIds.includes(article.id),
-  );
+  const visibleIds = savedOrder ? JSON.parse(savedOrder) : [];
+
+  let items;
+  let emptyText;
+  if (editPanelMode === "layouts") {
+    const select = document.getElementById("layoutSelect");
+    const current = select ? select.value : "";
+    items = availableLayouts
+      .filter((name) => name !== current && !visibleIds.includes(LAYOUT_TILE_PREFIX + name))
+      .map((name) => ({ id: LAYOUT_TILE_PREFIX + name, label: "🗂️ " + name, layout: true }));
+    emptyText = availableLayouts.filter((n) => n !== current).length
+      ? translations.all_layouts_placed
+      : translations.no_other_layouts;
+  } else {
+    items = articles
+      .filter((article) => !visibleIds.includes(article.id))
+      .map((article) => ({ id: article.id, label: article.name, layout: false }));
+    emptyText = translations.all_products_visible;
+  }
 
   editGrid.innerHTML = "";
 
-  if (availableArticles.length === 0) {
+  if (items.length === 0) {
     editGrid.innerHTML =
-      '<p style="text-align: center; opacity: 0.6; padding: 20px;">' +
-      escapeHtml(translations.all_products_visible) +
+      '<p style="grid-column: 1 / -1; text-align: center; opacity: 0.6; padding: 20px;">' +
+      escapeHtml(emptyText) +
       "</p>";
     return;
   }
 
-  availableArticles.forEach((article) => {
+  items.forEach((item) => {
     const btn = document.createElement("button");
-    btn.className = "add-product-btn";
-    btn.textContent = article.name;
-    btn.setAttribute("data-id", article.id);
-    btn.setAttribute("draggable", "true");
-    btn.ondragstart = (e) => {
-      e.dataTransfer.setData("text/plain", article.id);
-      e.dataTransfer.effectAllowed = "copy";
-      e.dataTransfer.dropEffect = "copy";
-    };
+    btn.className = "add-product-btn" + (item.layout ? " add-layout-btn" : "");
+    btn.textContent = item.label;
+    btn.setAttribute("data-id", item.id);
     editGrid.appendChild(btn);
   });
 }
@@ -431,10 +470,15 @@ function setupInteractions() {
         if (visibleIds.includes(id)) return;
         const grid = document.getElementById("productsGrid");
         const gridRect = grid.getBoundingClientRect();
+        // Layout tiles start 2 cells wide so the name fits
+        const cols = layoutNameFromTileId(id) !== null ? 2 : 1;
         const rect = {
-          x: Math.floor((event.dragEvent.client.x - gridRect.left) / GRID_CELL) * GRID_CELL,
+          x: Math.min(
+            Math.floor((event.dragEvent.client.x - gridRect.left) / GRID_CELL),
+            GRID_COLS - cols,
+          ) * GRID_CELL,
           y: Math.floor((event.dragEvent.client.y - gridRect.top) / GRID_CELL) * GRID_CELL,
-          width: GRID_CELL,
+          width: cols * GRID_CELL,
           height: GRID_CELL,
         };
         if (!isFreeSpot(id, rect)) return;
@@ -675,7 +719,8 @@ window.addEventListener('DOMContentLoaded', function() {
         opt.textContent = name;
         layoutSelect.appendChild(opt);
       });
-      renderLayoutButtons(data.layouts);
+      availableLayouts = data.layouts;
+      if (isEditMode) updateEditAvailableProducts();
       // Zuletzt geladenes Layout selektieren
       const last = localStorage.getItem(LAYOUT_KEY);
       if (last && data.layouts.includes(last)) {
@@ -684,38 +729,15 @@ window.addEventListener('DOMContentLoaded', function() {
       } else {
         layoutSelect.value = '';
       }
-      updateLayoutButtons();
     }
   }
 
-  // One button per saved layout for quick switching
-  function renderLayoutButtons(names) {
-    const bar = document.getElementById('layoutButtons');
-    if (!bar) return;
-    bar.innerHTML = '';
-    names.forEach(name => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'layout-switch-btn';
-      btn.textContent = name;
-      btn.dataset.layout = name;
-      btn.addEventListener('click', () => {
-        layoutSelect.value = name;
-        loadLayoutFromServer(name);
-      });
-      bar.appendChild(btn);
-    });
-    updateLayoutButtons();
-  }
-
-  function updateLayoutButtons() {
-    const current = layoutSelect ? layoutSelect.value : '';
-    document.querySelectorAll('#layoutButtons .layout-switch-btn').forEach(btn => {
-      const active = btn.dataset.layout === current;
-      btn.classList.toggle('active', active);
-      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
-  }
+  // Used by layout tiles on the grid
+  switchToLayout = function (name) {
+    if (!layoutSelect || !name) return;
+    layoutSelect.value = name;
+    loadLayoutFromServer(name);
+  };
 
   async function loadLayoutFromServer(name) {
     if (!name) return;
@@ -731,7 +753,6 @@ window.addEventListener('DOMContentLoaded', function() {
         renderProductsGrid();
         if (isEditMode) updateEditAvailableProducts();
         setupInteractions();
-        updateLayoutButtons();
       }
     } else {
       alert(translations.layout_load_failed + ': ' + (data.error || translations.unknown_error));
@@ -775,8 +796,6 @@ window.addEventListener('DOMContentLoaded', function() {
     layoutSelect.addEventListener('change', e => {
       if (layoutSelect.value) {
         loadLayoutFromServer(layoutSelect.value);
-      } else {
-        updateLayoutButtons();
       }
     });
     fetchLayouts();

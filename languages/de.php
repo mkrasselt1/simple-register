@@ -211,4 +211,7 @@ return [
     'layouts' => 'Layouts',
     'resize_panel_hint' => 'Ziehen, um die Breite zu ändern (Doppelklick: zurücksetzen)',
     'price_each' => '%s € pro Stück',
+    'products' => 'Produkte',
+    'all_layouts_placed' => 'Alle Layouts sind bereits platziert',
+    'no_other_layouts' => 'Keine weiteren Layouts gespeichert. Speichern Sie zuerst weitere Layouts über 💾.',
 ];

@@ -116,32 +116,62 @@ body.resizing-panel {
     user-select: none;
 }
 
-/* Quick layout switch buttons */
-.layout-buttons {
+/* Toggle "Produkte | Layouts" in the edit panel */
+.panel-toggle {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    gap: 4px;
+    padding: 4px;
+    background: #0f3460;
+    border-radius: 8px;
+}
+
+.panel-toggle-btn {
     flex: 1;
-    min-width: 0;
-}
-
-.layout-controls .layout-switch-btn {
-    margin-left: 0;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.12);
-    color: white;
-    border: 2px solid transparent;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.75);
     font-weight: 600;
+    font-size: 1em;
+    cursor: pointer;
 }
 
-.layout-controls .layout-switch-btn:hover {
-    background: rgba(255, 255, 255, 0.22);
+.panel-toggle-btn:hover {
+    color: white;
 }
 
-.layout-controls .layout-switch-btn.active {
+.panel-toggle-btn.active {
     background: #4ecca3;
     color: #1a1a2e;
-    border-color: #4ecca3;
+}
+
+/* Layout tile on the grid (switches layout) */
+.product-btn.layout-tile {
+    background: linear-gradient(135deg, #2c3e50, #3d5a80);
+    color: white;
+    border: 2px dashed rgba(78, 204, 163, 0.8);
+}
+
+.product-btn.layout-tile {
+    font-size: 0.85em;
+    overflow: hidden;
+    padding: 3px 6px;
+}
+
+.product-btn.layout-tile .name {
+    margin-bottom: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.add-product-btn.add-layout-btn {
+    border-color: #7aa2f7;
+    color: #c0d4ff;
+    background: rgba(122, 162, 247, 0.12);
 }
 
 .edit-panel.show {
