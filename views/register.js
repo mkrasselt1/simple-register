@@ -572,7 +572,7 @@ function updateCartDisplay() {
 			<div class="bill-item">
 				<div class="item-info">
 					<div class="item-name">${escapeHtml(item.name)}</div>
-					<div class="item-price">${item.price.toFixed(2)} € each</div>
+					<div class="item-price">${escapeHtml(translations.price_each.replace('%s', item.price.toFixed(2)))}</div>
 				</div>
 				<span class="item-qty">×${item.qty}</span>
 				<button class="remove-btn" onclick="removeFromCart('${item.id}')">−</button>
@@ -675,6 +675,7 @@ window.addEventListener('DOMContentLoaded', function() {
         opt.textContent = name;
         layoutSelect.appendChild(opt);
       });
+      renderLayoutButtons(data.layouts);
       // Zuletzt geladenes Layout selektieren
       const last = localStorage.getItem(LAYOUT_KEY);
       if (last && data.layouts.includes(last)) {
@@ -683,7 +684,37 @@ window.addEventListener('DOMContentLoaded', function() {
       } else {
         layoutSelect.value = '';
       }
+      updateLayoutButtons();
     }
+  }
+
+  // One button per saved layout for quick switching
+  function renderLayoutButtons(names) {
+    const bar = document.getElementById('layoutButtons');
+    if (!bar) return;
+    bar.innerHTML = '';
+    names.forEach(name => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'layout-switch-btn';
+      btn.textContent = name;
+      btn.dataset.layout = name;
+      btn.addEventListener('click', () => {
+        layoutSelect.value = name;
+        loadLayoutFromServer(name);
+      });
+      bar.appendChild(btn);
+    });
+    updateLayoutButtons();
+  }
+
+  function updateLayoutButtons() {
+    const current = layoutSelect ? layoutSelect.value : '';
+    document.querySelectorAll('#layoutButtons .layout-switch-btn').forEach(btn => {
+      const active = btn.dataset.layout === current;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
   }
 
   async function loadLayoutFromServer(name) {
@@ -698,7 +729,9 @@ window.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('register_button_positions', JSON.stringify(buttonPositions));
         localStorage.setItem(LAYOUT_KEY, name);
         renderProductsGrid();
+        if (isEditMode) updateEditAvailableProducts();
         setupInteractions();
+        updateLayoutButtons();
       }
     } else {
       alert(translations.layout_load_failed + ': ' + (data.error || translations.unknown_error));
@@ -742,6 +775,8 @@ window.addEventListener('DOMContentLoaded', function() {
     layoutSelect.addEventListener('change', e => {
       if (layoutSelect.value) {
         loadLayoutFromServer(layoutSelect.value);
+      } else {
+        updateLayoutButtons();
       }
     });
     fetchLayouts();
@@ -750,6 +785,59 @@ window.addEventListener('DOMContentLoaded', function() {
   if (saveLayoutBtn) {
     saveLayoutBtn.addEventListener('click', saveLayoutToServer);
   }
+});
+
+// --- Adjustable width of the right column (stored per device) ---
+window.addEventListener('DOMContentLoaded', function () {
+  const resizer = document.getElementById('panelResizer');
+  const container = document.querySelector('.main-container');
+  if (!resizer || !container) return;
+
+  const KEY = 'register_side_panel_width';
+  const MIN = 220;
+  const DEFAULT = 300;
+  const maxWidth = () => Math.max(MIN, Math.round(window.innerWidth * 0.6));
+
+  function apply(width) {
+    const w = Math.min(Math.max(MIN, Math.round(width)), maxWidth());
+    document.documentElement.style.setProperty('--side-panel-width', w + 'px');
+    return w;
+  }
+
+  let stored = null;
+  try { stored = parseInt(localStorage.getItem(KEY), 10); } catch (e) {}
+  if (stored) apply(stored);
+
+  let dragging = false;
+  let current = stored || DEFAULT;
+
+  resizer.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    resizer.setPointerCapture(e.pointerId);
+    resizer.classList.add('active');
+    document.body.classList.add('resizing-panel');
+    e.preventDefault();
+  });
+  resizer.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const rect = container.getBoundingClientRect();
+    current = apply(rect.right - e.clientX);
+  });
+  const stop = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    resizer.classList.remove('active');
+    document.body.classList.remove('resizing-panel');
+    try { localStorage.setItem(KEY, String(current)); } catch (err) {}
+  };
+  resizer.addEventListener('pointerup', stop);
+  resizer.addEventListener('pointercancel', stop);
+  // Double click resets to default width
+  resizer.addEventListener('dblclick', () => {
+    current = apply(DEFAULT);
+    try { localStorage.removeItem(KEY); } catch (err) {}
+  });
+  window.addEventListener('resize', () => apply(current));
 });
 
 // Keep session alive by pinging server every 5 minutes

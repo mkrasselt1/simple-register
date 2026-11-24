@@ -35,6 +35,7 @@
             'layout_no_name_entered' => $__('layout_no_name_entered'),
             'layout_saved' => $__('layout_saved'),
             'layout_save_failed' => $__('layout_save_failed'),
+            'price_each' => $__('price_each'),
         ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
     </script>
     <script src="views/register.js"></script>
@@ -67,6 +68,7 @@
     </div>
 
     <div class="layout-controls">
+        <div class="layout-buttons" id="layoutButtons" role="toolbar" aria-label="<?php echo View::escape($__('layouts')); ?>"></div>
         <div>
             <?php if (isset($_SESSION['user']) && in_array('admin', $_SESSION['user']['permissions'])): ?>
             <button id="editModeBtn" onclick="toggleEditMode()">✏️ <?php echo $__('edit_layout'); ?></button>
@@ -97,6 +99,9 @@
                 </div>
             <?php endif; ?>
         </div>
+
+        <div class="panel-resizer" id="panelResizer" role="separator" aria-orientation="vertical"
+             title="<?php echo View::escape($__('resize_panel_hint')); ?>"></div>
 
         <div class="bill-panel" id="billPanel">
             <div class="bill-header">

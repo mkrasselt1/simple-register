@@ -207,4 +207,8 @@ return [
     'sync_error_version' => 'Inkompatible Sync-Version. Bitte beide Instanzen aktualisieren.',
     'sync_stats' => '%d Artikel, %d Layouts, %d Benutzer, %d Transaktionen',
     'sync_success' => 'Synchronisation abgeschlossen. Empfangen: %s. Gesendet: %s.',
+    // Register view
+    'layouts' => 'Layouts',
+    'resize_panel_hint' => 'Ziehen, um die Breite zu ändern (Doppelklick: zurücksetzen)',
+    'price_each' => '%s € pro Stück',
 ];

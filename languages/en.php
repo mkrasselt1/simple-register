@@ -207,4 +207,8 @@ return [
     'sync_error_version' => 'Incompatible sync version. Please update both instances.',
     'sync_stats' => '%d articles, %d layouts, %d users, %d transactions',
     'sync_success' => 'Synchronisation completed. Received: %s. Sent: %s.',
+    // Register view
+    'layouts' => 'Layouts',
+    'resize_panel_hint' => 'Drag to change the width (double click: reset)',
+    'price_each' => '%s € each',
 ];
