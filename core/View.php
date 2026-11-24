@@ -49,6 +49,18 @@ class View {
     }
     
     /**
+     * URL of a static file with its modification time appended, so browsers
+     * load the new version after an update instead of a cached one.
+     * @param string $path Path relative to the project root, e.g. views/register.js
+     * @return string
+     */
+    public static function asset($path) {
+        $file = __DIR__ . '/../' . ltrim($path, '/');
+        $version = is_file($file) ? filemtime($file) : 0;
+        return self::escape($path . ($version ? '?v=' . $version : ''));
+    }
+
+    /**
      * Escape HTML special characters
      * @param string $string String to escape
      * @return string Escaped string

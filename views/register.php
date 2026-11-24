@@ -6,15 +6,15 @@
     <title><?php echo $lang->get('register_title'); ?></title>
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
-        <link rel="stylesheet" href="views/common.css">
+        <link rel="stylesheet" href="<?php echo View::asset('views/common.css'); ?>">
         <style>
             html, body {
                 overscroll-behavior-y: contain;
                 touch-action: manipulation;
             }
         </style>
-    <link rel="stylesheet" href="views/register.css">
-    <script src="views/js/interact.min.js"></script>
+    <link rel="stylesheet" href="<?php echo View::asset('views/register.css'); ?>">
+    <script src="<?php echo View::asset('views/js/interact.min.js'); ?>"></script>
     <script>
         const articles = <?php echo $articlesJson; ?>;
         const translations = <?php echo json_encode([
@@ -38,7 +38,7 @@
             'price_each' => $__('price_each'),
         ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
     </script>
-    <script src="views/register.js"></script>
+    <script src="<?php echo View::asset('views/register.js'); ?>"></script>
     <?php require_once __DIR__ . '/_color_utils.php'; ?>
 </head>
 <body>

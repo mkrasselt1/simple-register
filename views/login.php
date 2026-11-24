@@ -6,7 +6,7 @@
     <title><?php echo $__('login_title'); ?></title>
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
-    <link rel="stylesheet" href="views/common.css">
+    <link rel="stylesheet" href="<?php echo View::asset('views/common.css'); ?>">
     <style>
         body {
             display: flex;
